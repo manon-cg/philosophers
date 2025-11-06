@@ -6,25 +6,28 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 15:39:04 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/04 14:57:39 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/06 15:16:02 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 #include <stdio.h> // for printf
 #include <stdlib.h> // for malloc/free
-#include <sys/time.h> // for gettimeofday
 #include <stddef.h> // for size_t
 #include <pthread.h>  // for threading
 
 void	*philo_function(void *arg)
 {
+	// (t_overview *)arg;
+	// while (arg->someone_died == false)
+	// {
+	// 	printf("running.....\n");
+	// 	// eat
+	// 	// sleep
+	// 	// think
+	// 	usleep(1000);
+	// }
 	(void)arg;
-	while (1)
-	{
-		printf("Running...\n");
-		usleep(1000);
-	}
 	return (NULL);
 }
 
@@ -42,26 +45,29 @@ void	arg_error(void)
  */
 bool	handle_args(int argc, char *argv[], t_overview *overview)
 {
-	int			valid;
-
 	if (argc < 5 || argc > 6)
 		return (arg_error(), false);
-	valid = 1;
-	overview->philo_count = philo_atoi(argv[1], &valid);
-	overview->time_to_die = philo_atoi(argv[2], &valid);
-	overview->time_to_eat = philo_atoi(argv[3], &valid);
-	overview->time_to_sleep = philo_atoi(argv[4], &valid);
-	overview->amount_to_eat = 0; // mayb not necessary if im not looking at it
+	overview->philo_count = philo_atoi(argv[1]);
+	if (overview->philo_count <= 0)
+		return (free(overview), printf(MSG_INVALID_INPUT), false);
+	// if philo count is more than 200, don't allow
+	overview->time_to_die = philo_atoi(argv[2]);
+	if (overview->time_to_die <= 0)
+		return (free(overview), printf(MSG_INVALID_INPUT), false);
+	overview->time_to_eat = philo_atoi(argv[3]);
+	if (overview->time_to_eat <= 0)
+		return (free(overview), printf(MSG_INVALID_INPUT), false);
+	overview->time_to_sleep = philo_atoi(argv[4]);
+	if (overview->time_to_sleep <= 0)
+		return (free(overview), printf(MSG_INVALID_INPUT), false);
+	overview->amount_to_eat = 0;
 	overview->end_point_given = false;	
 	if (argc > 5)
 	{
-		overview->amount_to_eat = philo_atoi(argv[5], &valid);
-		overview->end_point_given = true;	
-	}	
-	if ((valid) == -1)
-	{
-		free(overview);
-		return (printf("Make sure all input is valid ints\n"), false);
+		overview->amount_to_eat = philo_atoi(argv[5]);
+		if (overview->amount_to_eat < 0)
+			return (free(overview), printf(MSG_INVALID_INPUT), false);
+		overview->end_point_given = true;
 	}
 	return (true);
 }
@@ -87,25 +93,27 @@ void	create_philos(t_overview *overview)
 	// 	i++;
 	// }
 	(void)overview;
+	printf("creating a thread\n");
 	pthread_create(&thread, NULL, philo_function, NULL);
 }
 
 int	main(int argc, char *argv[])
 {
 	t_overview		overview;
-	struct timeval	time_struct;
+	pthread_mutex_t	mutex;
 
-	printf("going to handle args:\n");
+	// printf("going to handle args:\n");
 	if (handle_args(argc, argv, &overview))
 	{
 		print_overview(&overview);
+		// if amount to eat = 0 -> done ? no ?
 	}
-	if (gettimeofday(&time_struct, NULL) != -1)
-		overview.start_time = time_struct.tv_usec;
-	else
-		return(printf("get time of day fail\n"), EXIT_FAILURE);
+	overview.start_time_msec = get_time_msec();
+	// fail handle ?? ?
 	create_philos(&overview);
+	pthread_mutex_init(&mutex, NULL);
 
-	printf("TIME in usec?? since when???: %ld\n", time_struct.tv_usec);
-	
+	pthread_mutex_destroy(&mutex);
+
+	printf("TIME in msec?? since when???: %d\n", overview.start_time_msec);
 }

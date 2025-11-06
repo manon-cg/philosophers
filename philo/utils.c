@@ -6,11 +6,12 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/31 10:39:49 by mgroos            #+#    #+#             */
-/*   Updated: 2025/10/31 11:36:40 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/06 15:15:40 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdio.h> // for printf()
+#include <sys/time.h> // for gettimeofday
 
 // void	*ft_calloc(size_t nmemb, size_t size)
 // {
@@ -36,10 +37,9 @@ size_t	ft_strlen(const char *s)
 	return (i);
 }
 
-/* Less lenient version of atoi; a single - at the start is allowed, 
-	every other char needs to be a number. changes the 'valid' pointer 
-	to -1 upon invalid input */
-int	philo_atoi(const char *nptr, int *valid)
+/* Less lenient version of atoi: negative numbers are not allowed. Invalid
+string input returns -1. */
+int	philo_atoi(const char *nptr)
 {
 	int			i;
 	long long	number;
@@ -47,21 +47,57 @@ int	philo_atoi(const char *nptr, int *valid)
 	i = 0;
 	number = 0;
 	if (nptr[i] == '-')
-	{
-		printf("Only use positive numbers!\n");
-		*valid = -1;
-		return (0);
-	}
+		return (-1);
 	while (nptr[i] == '0')
 		i++;
 	if (ft_strlen(&(nptr[i])) > 10)
-		*valid = -1;
+		return (-1);
 	while (nptr[i] >= '0' && nptr[i] <= '9')
 	{
 		number = number * 10 + (nptr[i] - 48);
 		i++;
 	}
 	if (nptr[i] || number > 2147483647 || number < -2147483648)
-		*valid = -1;
+		return (-1);
 	return ((int)number);
 }
+
+unsigned int	get_time_msec(void)
+{
+	struct timeval	time_struct;
+
+	if (gettimeofday(&time_struct, NULL) != -1)
+		return (time_struct.tv_usec / 1000 + time_struct.tv_sec * 1000);
+	else
+		return (printf("get time of day fail\n"), 0); // 0 is not safe ? hm.
+	
+}
+
+// /* Less lenient version of atoi; a single - at the start is allowed, 
+// 	every other char needs to be a number. changes the 'valid' pointer 
+// 	to -1 upon invalid input */
+// int	philo_atoi(const char *nptr, int *valid)
+// {
+// 	int			i;
+// 	long long	number;
+
+// 	i = 0;
+// 	number = 0;
+// 	if (nptr[i] == '-')
+// 	{
+// 		*valid = -1;
+// 		return (0);
+// 	}
+// 	while (nptr[i] == '0')
+// 		i++;
+// 	if (ft_strlen(&(nptr[i])) > 10)
+// 		*valid = -1;
+// 	while (nptr[i] >= '0' && nptr[i] <= '9')
+// 	{
+// 		number = number * 10 + (nptr[i] - 48);
+// 		i++;
+// 	}
+// 	if (nptr[i] || number > 2147483647 || number < -2147483648)
+// 		*valid = -1;
+// 	return ((int)number);
+// }
