@@ -6,15 +6,19 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 15:40:44 by mgroos            #+#    #+#             */
-/*   Updated: 2025/10/31 10:42:41 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/10/31 11:07:34 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef PHILO_H
 # define PHILO_H
-
-#include <stdbool.h> // for bool
-#include <unistd.h> // for size_t
+# include <stdbool.h> // for bool
+# include <unistd.h> // for size_t
+# define MSG_FORK "has taken a fork\n"
+# define MSG_EAT "is eating\n"
+# define MSG_SLEEP "is sleeping\n"
+# define MSG_THINK "is thinking\n"
+# define MSG_DIE "died\n"
 
 // large struct for all relevant infooo
 typedef struct s_overview
@@ -25,8 +29,17 @@ typedef struct s_overview
 	int		time_to_sleep;
 	int		amount_to_eat;
 	bool	end_point_given; // set to false if not proivded by user
-	
+	int		start_time;
+
 }	t_overview;
+
+// every philo has one
+typedef struct s_philosopher
+{
+	t_overview	overview;
+	int			philo_nbr;
+	bool		alive;
+}	t_philosopher;
 
 // utils
 size_t	ft_strlen(const char *s);

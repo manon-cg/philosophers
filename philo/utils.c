@@ -6,12 +6,24 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/31 10:39:49 by mgroos            #+#    #+#             */
-/*   Updated: 2025/10/31 10:41:39 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/10/31 11:36:40 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <unistd.h> // for size_t
+#include <stdio.h> // for printf()
 
+// void	*ft_calloc(size_t nmemb, size_t size)
+// {
+// 	char	*array;
+
+// 	if (nmemb > SIZE_MAX / size)
+// 		return (NULL);
+// 	array = malloc(size * nmemb);
+// 	if (array == NULL)
+// 		return (NULL);
+// 	ft_bzero_gnl(array, nmemb * size);
+// 	return (array);
+// }
 
 /* returns length of string s */
 size_t	ft_strlen(const char *s)
@@ -24,24 +36,21 @@ size_t	ft_strlen(const char *s)
 	return (i);
 }
 
-// change this so it doesn't allow any negative numbers
 /* Less lenient version of atoi; a single - at the start is allowed, 
 	every other char needs to be a number. changes the 'valid' pointer 
 	to -1 upon invalid input */
 int	philo_atoi(const char *nptr, int *valid)
 {
-	// pushswap version, see if i wanna edit anyting
 	int			i;
 	long long	number;
-	int			sign;
 
 	i = 0;
 	number = 0;
-	sign = 1;
 	if (nptr[i] == '-')
 	{
-		sign = -1;
-		i++;
+		printf("Only use positive numbers!\n");
+		*valid = -1;
+		return (0);
 	}
 	while (nptr[i] == '0')
 		i++;
@@ -54,5 +63,5 @@ int	philo_atoi(const char *nptr, int *valid)
 	}
 	if (nptr[i] || number > 2147483647 || number < -2147483648)
 		*valid = -1;
-	return ((int)number * sign);
+	return ((int)number);
 }
