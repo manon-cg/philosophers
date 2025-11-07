@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 15:39:04 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/06 15:16:02 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/07 11:11:30 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,16 +18,17 @@
 
 void	*philo_function(void *arg)
 {
-	// (t_overview *)arg;
-	// while (arg->someone_died == false)
-	// {
-	// 	printf("running.....\n");
-	// 	// eat
-	// 	// sleep
-	// 	// think
-	// 	usleep(1000);
-	// }
-	(void)arg;
+	t_philosopher *philo;
+	
+	philo = (t_philosopher *)arg;
+	while (philo->alive == true)
+	{
+		printf("running.....\n");
+		// eat
+		// sleep
+		// think
+		usleep(1000);
+	}
 	return (NULL);
 }
 
@@ -72,15 +73,7 @@ bool	handle_args(int argc, char *argv[], t_overview *overview)
 	return (true);
 }
 
-/** For testing only: prints philo struct. */
-void print_overview(t_overview *overview)
-{
-	printf("philocount: %i\ntime_to_die: %i\ntime_to_eat: %i\n", 
-		overview->philo_count, overview->time_to_die, overview->time_to_eat);
-	printf("time_to_sleep: %i\namount_to_eat: %i\n", overview->time_to_sleep,
-		overview->amount_to_eat);
-}
-
+/** Create the threads to make  */
 void	create_philos(t_overview *overview)
 {
 	int	i;
@@ -97,23 +90,36 @@ void	create_philos(t_overview *overview)
 	pthread_create(&thread, NULL, philo_function, NULL);
 }
 
+/** Set up the mutexes. */
+void	set_up(t_overview *overview)
+{
+	pthread_mutex_init(overview->write_mutex, NULL);
+}
+
+/** Clean up the mutexes. */
+void	clean_up(t_overview *overview)
+{
+	pthread_mutex_destroy(overview->write_mutex);
+	// other mutexes destroy
+
+}
+
 int	main(int argc, char *argv[])
 {
 	t_overview		overview;
-	pthread_mutex_t	mutex;
 
 	// printf("going to handle args:\n");
 	if (handle_args(argc, argv, &overview))
 	{
-		print_overview(&overview);
+		
 		// if amount to eat = 0 -> done ? no ?
 	}
 	overview.start_time_msec = get_time_msec();
+	print_overview(&overview);
 	// fail handle ?? ?
 	create_philos(&overview);
-	pthread_mutex_init(&mutex, NULL);
-
-	pthread_mutex_destroy(&mutex);
+	set_up(&overview);
 
 	printf("TIME in msec?? since when???: %d\n", overview.start_time_msec);
+	clean_up(&overview);
 }

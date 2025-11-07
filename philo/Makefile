@@ -1,6 +1,7 @@
 NAME = philo
 
-SRC = main.c utils.c
+SRC = main.c utils.c \
+testing_only.c
 
 HEADER = philo.h
 

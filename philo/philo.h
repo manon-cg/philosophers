@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 15:40:44 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/06 15:17:03 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/07 11:20:09 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,14 +24,16 @@
 // large struct for all relevant infooo
 typedef struct s_overview
 {
-	int		philo_count;
-	int		time_to_die;
-	int		time_to_eat;
-	int		time_to_sleep;
-	int		amount_to_eat;
-	bool	end_point_given; // set to false if not proivded by user
-	int		start_time_msec;
-	bool	someone_died;
+	int				philo_count;
+	int				time_to_die;
+	int				time_to_eat;
+	int				time_to_sleep;
+	int				amount_to_eat;
+	bool			end_point_given; // set to false if not proivded by user
+	int				start_time_msec;
+	bool			someone_died;
+	pthread_mutex_t	*write_mutex;
+	pthread_mutex_t	*death_mutex;
 	// t_philosopher	*philosophers;
 
 }	t_overview;
@@ -47,8 +49,9 @@ typedef struct s_philosopher
 
 
 // utils
-size_t	ft_strlen(const char *s);
-int		philo_atoi(const char *nptr);
+size_t			ft_strlen(const char *s);
+int				philo_atoi(const char *nptr);
 unsigned int	get_time_msec(void);
+void			print_with_lock(t_overview *overview, char *msg);
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/31 11:00:22 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/06 15:09:06 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/07 10:54:48 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 void	philo_sleep(t_overview *overview)
 {
 	// mutex
-	printf("[time] [philo] %s\n", MSG_SLEEP);
+	print_with_lock(overview, MSG_SLEEP);
 	usleep(overview->time_to_sleep);
 }
 
@@ -33,7 +33,7 @@ void	philo_eat(t_overview *overview, t_philosopher *philo)
 	// phtread_mutex_lock(&mutex);
 
 	// print
-	printf("[time] [philo] %s\n", MSG_EAT);
+	print_with_lock(overview, MSG_EAT); // pass philo?
 
 	// eat
 	usleep(overview->time_to_eat);
@@ -45,20 +45,18 @@ void	philo_eat(t_overview *overview, t_philosopher *philo)
 }
 
 // grab fork function
-void philo_grab(void)
+void philo_grab(t_overview *overview)
 {
 	// lock
 
 	// ???? grab ??? ? ? ?
-	printf("[time] [philo] %s\n", MSG_FORK);
+	print_with_lock(overview, MSG_FORK);
 }
 
 // think function
 void	philo_think(t_overview *overview)
 {
-	(void)overview;
-
-	printf("[time] [philo] %s\n", MSG_THINK);
+	print_with_lock(overview, MSG_THINK);
 }
 
 /** Handle philosopher death by waiting for the other philosophers to 
