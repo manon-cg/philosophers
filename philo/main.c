@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 15:39:04 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/07 11:11:30 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/07 17:19:49 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,18 +15,36 @@
 #include <stdlib.h> // for malloc/free
 #include <stddef.h> // for size_t
 #include <pthread.h>  // for threading
+# include <unistd.h> // for usleep()
+
+/** Checks whether a philosopher has died by comparing time since most
+ * recent meal to time to die (both in msec).
+ */
+bool	philo_death_check(t_philosopher *philo)
+{
+	unsigned int	current_time;
+	
+	current_time = get_time_msec();
+	// erorr handling
+	if (current_time - philo->recent_meal >= philo->overview->time_to_die)
+	{
+		return (true);
+	}
+	return (false);
+}
 
 void	*philo_function(void *arg)
 {
 	t_philosopher *philo;
 	
 	philo = (t_philosopher *)arg;
-	while (philo->alive == true)
+	while (!philo_death_check(philo))
 	{
 		printf("running.....\n");
-		// eat
-		// sleep
-		// think
+		// grab forks ?
+		philo_eat(philo->overview, philo);
+		philo_sleep(philo->overview);
+		philo_think(philo->overview);
 		usleep(1000);
 	}
 	return (NULL);
@@ -73,27 +91,29 @@ bool	handle_args(int argc, char *argv[], t_overview *overview)
 	return (true);
 }
 
-/** Create the threads to make  */
-void	create_philos(t_overview *overview)
+/** Create the threads to make philosophers. */
+void	create_philos(t_overview *overview, t_philosopher *philos)
 {
 	int	i;
-	pthread_t thread;
 
 	i = 0;
-	// while (i < overview->philo_count)
-	// {
-	// 	pthread_create(&thread, NULL, philo_function, NULL);
-	// 	i++;
-	// }
-	(void)overview;
-	printf("creating a thread\n");
-	pthread_create(&thread, NULL, philo_function, NULL);
+	while (i < overview->philo_count)
+	{
+		printf("creating a thread\n");
+		pthread_create((philos[i]).philo_thread, NULL, philo_function, &philos[i]);
+		// err handling
+		i++;
+	}
+	// pthread_create(&thread, NULL, philo_function, NULL);
 }
 
 /** Set up the mutexes. */
 void	set_up(t_overview *overview)
 {
+
 	pthread_mutex_init(overview->write_mutex, NULL);
+	// err?
+	
 }
 
 /** Clean up the mutexes. */
@@ -107,19 +127,16 @@ void	clean_up(t_overview *overview)
 int	main(int argc, char *argv[])
 {
 	t_overview		overview;
+	t_philosopher	philos[MAX_PHILO_COUNT];
 
 	// printf("going to handle args:\n");
-	if (handle_args(argc, argv, &overview))
-	{
-		
-		// if amount to eat = 0 -> done ? no ?
-	}
+	if (!handle_args(argc, argv, &overview))
+		return (EXIT_FAILURE);
 	overview.start_time_msec = get_time_msec();
 	print_overview(&overview);
-	// fail handle ?? ?
-	create_philos(&overview);
+	// fail handle ???
+	create_philos(&overview, philos);
 	set_up(&overview);
-
-	printf("TIME in msec?? since when???: %d\n", overview.start_time_msec);
 	clean_up(&overview);
+	return (EXIT_SUCCESS);
 }

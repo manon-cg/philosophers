@@ -6,18 +6,18 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/31 11:00:22 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/07 10:54:48 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/07 12:21:18 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 #include <pthread.h>
+#include <unistd.h> // for usleep()
 #include <sys/time.h> // for gettimeofday
 
 /** Sleep for the amount of time provided by the user. */
 void	philo_sleep(t_overview *overview)
 {
-	// mutex
 	print_with_lock(overview, MSG_SLEEP);
 	usleep(overview->time_to_sleep);
 }
@@ -53,7 +53,7 @@ void philo_grab(t_overview *overview)
 	print_with_lock(overview, MSG_FORK);
 }
 
-// think function
+/** Function to run when a philosopher is sleeping. */
 void	philo_think(t_overview *overview)
 {
 	print_with_lock(overview, MSG_THINK);
@@ -62,9 +62,11 @@ void	philo_think(t_overview *overview)
 /** Handle philosopher death by waiting for the other philosophers to 
  * stop eating/sleeping, and then printing the death message.
  */
-void	philo_die(void) // pass a name variable or whatever
+void	philo_die(t_overview *overview) // pass a name variable or whatever
 {
 	usleep(1000);
+
 	// lock & open mutexes ? idk
-	printf("[timestamp] [philo nbr] %s\n", MSG_DIE);
+	overview->someone_died = true;
+	print_with_lock(overview, MSG_DIE);
 }
