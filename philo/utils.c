@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/31 10:39:49 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/10 12:10:39 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/10 13:22:22 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,12 +75,16 @@ unsigned int	get_time_msec(void)
 	
 }
 
-void	print_with_lock(t_overview *overview, char *msg)
+void	print_with_lock(t_overview *overview, t_philosopher *philo, char *msg)
 {
+	unsigned int	current_time;
+
+	current_time = get_time_msec(); // err handlgin
+	
 	pthread_mutex_lock(&(overview->write_mutex));
 	// decide if im getting time here or doing that & storing it somewhere earlier
 	// so i just pass it to the func as an extra var
-	printf("[time] [philo] %s\n", msg);
+	printf("%d %i %s", current_time, philo->philo_nbr, msg);
 	pthread_mutex_unlock(&(overview->write_mutex));
 }
 

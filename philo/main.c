@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 15:39:04 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/10 12:48:08 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/10 14:22:29 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ bool	philo_death_check(t_philosopher *philo)
 {
 	unsigned int	current_time;
 
-	printf("running a death check!\n");
+	// printf("running a death check!\n");
 	current_time = get_time_msec();
 	// erorr handling
 	if (current_time - philo->recent_meal >= (unsigned int)philo->overview->time_to_die)
@@ -40,15 +40,34 @@ void	*philo_function(void *arg)
 	t_philosopher *philo;
 
 	philo = (t_philosopher *)arg;
-	printf("inside philo func\n");
-	while (!philo_death_check(philo))
+	// printf("inside philo func\n");
+	// while (!philo_death_check(philo))
+	// usleep(1000);
+	while (1)
 	{
-		printf("running.....\n");
-		philo_grab(philo->overview, philo);
-		philo_eat(philo->overview, philo);
-		philo_sleep(philo->overview);
-		philo_think(philo->overview);
-		usleep(1000);
+		// printf("running.....\n");
+		if (philo->overview->philo_count % 2 == 0)
+		{
+			if (philo->philo_nbr % 2 == 0)
+			{
+				usleep(100);
+			}
+			philo_grab(philo->overview, philo);
+			philo_eat(philo->overview, philo);
+			philo_sleep(philo->overview, philo);
+			philo_think(philo->overview, philo);
+		}
+		else
+		{
+			printf("odd nbr\n");
+		}
+		// philo->overview->someone_died = philo_death_check(philo);
+		if (philo_death_check(philo))
+		{
+			philo_die(philo->overview, philo);
+		}
+		usleep(100);
+		
 	}
 	return (NULL);
 }
@@ -61,7 +80,10 @@ void	*watcher_function(void *arg)
 	while (1)
 	{
 		if (overview->someone_died == true)
+		{
+			// printf("SOMEONE DIED according to watcher\n");
 			break ;
+		}
 	}
 	return (NULL);
 }
@@ -118,10 +140,17 @@ void	create_philos(t_overview *overview, t_philosopher *philos)
 		(philos[i]).philo_nbr = i + 1;
 		(philos[i]).alive = true;
 		(philos[i]).overview = overview;
-		(philos[i]).recent_meal = 0;
-		printf("creating a thread for philo: %i\n", (philos[i]).philo_nbr);
+		(philos[i]).recent_meal = overview->start_time_msec;
+		// printf("creating a thread for philo: %i\n", (philos[i]).philo_nbr);
 		pthread_create(&(philos[i]).philo_thread, NULL, philo_function, &philos[i]);
 		// err handling
+		i++;
+	}
+	overview->start_time_msec = get_time_msec();
+	i = 0;
+	while (i < overview->philo_count)
+	{
+		(philos[i]).recent_meal = overview->start_time_msec;
 		i++;
 	}
 }
@@ -132,14 +161,14 @@ void	set_up(t_overview *overview)
 	int	i;
 
 	i = 0;
-	pthread_mutex_init(&(overview->write_mutex), NULL);
-	// err
+	pthread_mutex_init(&(overview->write_mutex), NULL); 	// err
+	pthread_mutex_init(&(overview->death_mutex), NULL); 	// err
 
 	// set up watcher thread
 	pthread_create(&(overview->watcher), NULL, watcher_function, &overview);
 	// err
 	// pthread_join((overview->watcher), NULL);
-	
+
 	// set up forks
 	while (i < overview->philo_count)
 	{
@@ -151,9 +180,17 @@ void	set_up(t_overview *overview)
 /** Clean up the mutexes. */
 void	clean_up(t_overview *overview)
 {
+	int	i;
+	
 	pthread_mutex_destroy(&(overview->write_mutex));
+	pthread_mutex_destroy(&(overview->death_mutex));
 	// other mutexes destroy
-
+	i = 0;
+	while (i < overview->philo_count)
+	{
+		pthread_mutex_destroy(&(overview->forks[i]));
+		i++;
+	}
 }
 
 int	main(int argc, char *argv[])
@@ -164,11 +201,14 @@ int	main(int argc, char *argv[])
 	// printf("going to handle args:\n");
 	if (!handle_args(argc, argv, &overview))
 		return (EXIT_FAILURE);
-	overview.start_time_msec = get_time_msec();
-	print_overview(&overview);
+	// print_overview(&overview);
 	// fail handle ???
 	set_up(&overview);
 	create_philos(&overview, philos);
+	while (!overview.someone_died)
+	{
+		usleep(100);
+	}
 	clean_up(&overview);
 	return (EXIT_SUCCESS);
 }

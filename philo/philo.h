@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 15:40:44 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/10 12:45:49 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/10 12:58:24 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,17 +51,17 @@ typedef struct s_philosopher
 }	t_philosopher;
 
 // actions
-void	philo_sleep(t_overview *overview);
+void	philo_sleep(t_overview *overview, t_philosopher *philo);
 void	philo_eat(t_overview *overview, t_philosopher *philo);
-void philo_grab(t_overview *overview, t_philosopher *philo);
-void	philo_think(t_overview *overview);
-void	philo_die(t_overview *overview);
+void	philo_grab(t_overview *overview, t_philosopher *philo);
+void	philo_think(t_overview *overview, t_philosopher *philo);
+void	philo_die(t_overview *overview, t_philosopher *philo);
 
 // utils
 size_t			ft_strlen(const char *s);
 int				philo_atoi(const char *nptr);
 unsigned int	get_time_msec(void);
-void			print_with_lock(t_overview *overview, char *msg);
+void	print_with_lock(t_overview *overview, t_philosopher *philo, char *msg);
 
 
 // dont handi n

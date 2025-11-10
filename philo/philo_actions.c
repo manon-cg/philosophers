@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/31 11:00:22 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/10 12:35:01 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/10 14:32:20 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,13 +15,12 @@
 #include <unistd.h> // for usleep()
 #include <sys/time.h> // for gettimeofday
 
-
 #include <stdio.h> // remove
 
 /** Sleep for the amount of time provided by the user. */
-void	philo_sleep(t_overview *overview)
+void	philo_sleep(t_overview *overview, t_philosopher *philo)
 {
-	print_with_lock(overview, MSG_SLEEP);
+	print_with_lock(overview, philo, MSG_SLEEP);
 	usleep(overview->time_to_sleep);
 }
 
@@ -30,55 +29,58 @@ void	philo_sleep(t_overview *overview)
  */
 void	philo_eat(t_overview *overview, t_philosopher *philo)
 {
-	struct timeval	time_struct;
-
-	// lock both forks	
-	// phtread_mutex_lock(&mutex);
-	// i think this is already done inside grab? 
+	// grab function happens outside: it locks the forks & prints fork grabbing
 
 	// print
-	print_with_lock(overview, MSG_EAT); // pass philo?
+	print_with_lock(overview, philo, MSG_EAT); // pass philo?
 
 	// eat
 	usleep(overview->time_to_eat);
 
-	gettimeofday(&time_struct, NULL);
-	philo->recent_meal = time_struct.tv_usec;
-
 	pthread_mutex_unlock(&overview->forks[philo->philo_nbr - 1]);
 	pthread_mutex_unlock(&overview->forks[philo->philo_nbr + 1]);
+
+	philo->recent_meal = get_time_msec();
+	// error handing
 }
 
 // grab fork function
 void philo_grab(t_overview *overview, t_philosopher *philo)
 {
-	if (philo->philo_nbr == philo->overview->amount_to_eat)
+	if (philo->philo_nbr == philo->overview->philo_count)
 	{
-		printf("special case!\n");
+		pthread_mutex_lock(&overview->forks[philo->philo_nbr - 1]);
+		print_with_lock(overview, philo, MSG_FORK);
+		pthread_mutex_lock(&overview->forks[0]);
+		print_with_lock(overview, philo, MSG_FORK);
+		printf("FORKS BY %i: %i & %i\n", philo->philo_nbr, \
+philo->philo_nbr - 1, 0);
 	}
 	else
 	{
 		pthread_mutex_lock(&overview->forks[philo->philo_nbr - 1]);
-		print_with_lock(overview, MSG_FORK);
-		pthread_mutex_lock(&overview->forks[philo->philo_nbr + 1]);
-		print_with_lock(overview, MSG_FORK);
+		print_with_lock(overview, philo, MSG_FORK);
+		pthread_mutex_lock(&overview->forks[philo->philo_nbr]);
+		print_with_lock(overview, philo, MSG_FORK);
+		printf("FORKS BY %i: %i & %i\n", philo->philo_nbr, \
+philo->philo_nbr - 1, philo->philo_nbr);
 	}
 }
 
-/** Function to run when a philosopher is sleeping. */
-void	philo_think(t_overview *overview)
+/** Function to run when a philosopher is thinking. */
+void	philo_think(t_overview *overview, t_philosopher *philo)
 {
-	print_with_lock(overview, MSG_THINK);
+	print_with_lock(overview, philo, MSG_THINK);
 }
 
 /** Handle philosopher death by waiting for the other philosophers to 
  * stop eating/sleeping, and then printing the death message.
  */
-void	philo_die(t_overview *overview) // pass a name variable or whatever
+void	philo_die(t_overview *overview, t_philosopher *philo)
 {
-	usleep(1000);
-
-	// lock & open mutexes ? idk
+	// usleep(1000);
+	pthread_mutex_lock(&(overview->death_mutex));
 	overview->someone_died = true;
-	print_with_lock(overview, MSG_DIE);
+	pthread_mutex_unlock(&(overview->death_mutex));
+	print_with_lock(overview, philo, MSG_DIE);
 }
