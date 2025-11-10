@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/31 11:00:22 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/10 14:32:20 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/10 15:30:09 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@
 void	philo_sleep(t_overview *overview, t_philosopher *philo)
 {
 	print_with_lock(overview, philo, MSG_SLEEP);
-	usleep(overview->time_to_sleep);
+	usleep(overview->time_to_sleep * 1000);
 }
 
 /** The philosopher locks both forks, waits, then updates the time since it
@@ -30,18 +30,22 @@ void	philo_sleep(t_overview *overview, t_philosopher *philo)
 void	philo_eat(t_overview *overview, t_philosopher *philo)
 {
 	// grab function happens outside: it locks the forks & prints fork grabbing
-
 	// print
 	print_with_lock(overview, philo, MSG_EAT); // pass philo?
 
+	// store recent meal
+	pthread_mutex_lock(&philo->recent_meal_lock);
+	philo->recent_meal = get_time_msec();// error handing
+	philo->meal_count += 1;
+	pthread_mutex_unlock(&philo->recent_meal_lock);
+
 	// eat
-	usleep(overview->time_to_eat);
+	usleep(overview->time_to_eat * 1000);
+
 
 	pthread_mutex_unlock(&overview->forks[philo->philo_nbr - 1]);
 	pthread_mutex_unlock(&overview->forks[philo->philo_nbr + 1]);
 
-	philo->recent_meal = get_time_msec();
-	// error handing
 }
 
 // grab fork function
@@ -53,8 +57,8 @@ void philo_grab(t_overview *overview, t_philosopher *philo)
 		print_with_lock(overview, philo, MSG_FORK);
 		pthread_mutex_lock(&overview->forks[0]);
 		print_with_lock(overview, philo, MSG_FORK);
-		printf("FORKS BY %i: %i & %i\n", philo->philo_nbr, \
-philo->philo_nbr - 1, 0);
+// 		printf("FORKS BY %i: %i & %i\n", philo->philo_nbr, \
+// philo->philo_nbr - 1, 0);
 	}
 	else
 	{
@@ -62,8 +66,8 @@ philo->philo_nbr - 1, 0);
 		print_with_lock(overview, philo, MSG_FORK);
 		pthread_mutex_lock(&overview->forks[philo->philo_nbr]);
 		print_with_lock(overview, philo, MSG_FORK);
-		printf("FORKS BY %i: %i & %i\n", philo->philo_nbr, \
-philo->philo_nbr - 1, philo->philo_nbr);
+// 		printf("FORKS BY %i: %i & %i\n", philo->philo_nbr, \
+// philo->philo_nbr - 1, philo->philo_nbr);
 	}
 }
 
@@ -78,7 +82,7 @@ void	philo_think(t_overview *overview, t_philosopher *philo)
  */
 void	philo_die(t_overview *overview, t_philosopher *philo)
 {
-	// usleep(1000);
+	usleep(1000);
 	pthread_mutex_lock(&(overview->death_mutex));
 	overview->someone_died = true;
 	pthread_mutex_unlock(&(overview->death_mutex));

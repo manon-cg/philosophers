@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 15:40:44 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/10 12:58:24 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/10 15:09:45 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,8 @@ typedef struct s_philosopher
 	unsigned int	recent_meal;
 	bool			alive; // set to true at start
 	pthread_t		philo_thread;
+	pthread_mutex_t	recent_meal_lock;
+	unsigned int	meal_count;
 }	t_philosopher;
 
 // actions
