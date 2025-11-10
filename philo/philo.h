@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 15:40:44 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/07 17:00:56 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/10 12:07:41 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,8 +33,9 @@ typedef struct s_overview
 	bool			end_point_given; // set to false if not proivded by user
 	int				start_time_msec;
 	bool			someone_died;
-	pthread_mutex_t	*write_mutex;
-	pthread_mutex_t	*death_mutex;
+	pthread_mutex_t	write_mutex;
+	pthread_mutex_t	death_mutex;
+	pthread_t		watcher;
 	// forks ! all of them should have a mutex Somehow. mutex array? :|
 	// t_philosopher	*philosophers;
 
@@ -47,7 +48,7 @@ typedef struct s_philosopher
 	int				philo_nbr;
 	unsigned int	recent_meal;
 	bool			alive; // set to true at start
-	pthread_t		*philo_thread;
+	pthread_t		philo_thread;
 }	t_philosopher;
 
 // actions

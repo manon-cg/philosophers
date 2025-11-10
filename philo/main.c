@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 15:39:04 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/07 17:19:49 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/10 12:16:15 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@
 bool	philo_death_check(t_philosopher *philo)
 {
 	unsigned int	current_time;
-	
+
 	current_time = get_time_msec();
 	// erorr handling
 	if (current_time - philo->recent_meal >= philo->overview->time_to_die)
@@ -46,6 +46,19 @@ void	*philo_function(void *arg)
 		philo_sleep(philo->overview);
 		philo_think(philo->overview);
 		usleep(1000);
+	}
+	return (NULL);
+}
+
+void	*watcher_function(void *arg)
+{
+	t_overview	*overview;
+
+	overview = (t_overview *)arg;
+	while (1)
+	{
+		if (overview->someone_died == true)
+			break ;
 	}
 	return (NULL);
 }
@@ -97,10 +110,17 @@ void	create_philos(t_overview *overview, t_philosopher *philos)
 	int	i;
 
 	i = 0;
+	// while (i < overview->philo_count)
 	while (i < overview->philo_count)
 	{
 		printf("creating a thread\n");
-		pthread_create((philos[i]).philo_thread, NULL, philo_function, &philos[i]);
+		(philos[i]).philo_nbr = i + 1;
+		(philos[i]).alive = true;
+		(philos[i]).overview = overview;
+		(philos[i]).recent_meal = 0;
+		pthread_create(&(philos[i]).philo_thread, NULL, philo_function, &philos[i]);
+		// *(philos[i].philo_thread) = 37493759873948;
+		// printf("philos[%i]: %lu", i, *(philos[i].philo_thread));
 		// err handling
 		i++;
 	}
@@ -110,16 +130,20 @@ void	create_philos(t_overview *overview, t_philosopher *philos)
 /** Set up the mutexes. */
 void	set_up(t_overview *overview)
 {
+	pthread_mutex_init(&(overview->write_mutex), NULL);
+	// err
 
-	pthread_mutex_init(overview->write_mutex, NULL);
-	// err?
+	// set up watcher thread
+	pthread_create(&(overview->watcher), NULL, watcher_function, &overview);
+	// err
+	// pthread_join((overview->watcher), NULL);
 	
 }
 
 /** Clean up the mutexes. */
 void	clean_up(t_overview *overview)
 {
-	pthread_mutex_destroy(overview->write_mutex);
+	pthread_mutex_destroy(&(overview->write_mutex));
 	// other mutexes destroy
 
 }
@@ -135,8 +159,8 @@ int	main(int argc, char *argv[])
 	overview.start_time_msec = get_time_msec();
 	print_overview(&overview);
 	// fail handle ???
-	create_philos(&overview, philos);
 	set_up(&overview);
+	create_philos(&overview, philos);
 	clean_up(&overview);
 	return (EXIT_SUCCESS);
 }

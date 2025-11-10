@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/31 10:39:49 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/07 10:53:43 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/10 12:10:39 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,11 +77,11 @@ unsigned int	get_time_msec(void)
 
 void	print_with_lock(t_overview *overview, char *msg)
 {
-	pthread_mutex_lock(overview->write_mutex);
+	pthread_mutex_lock(&(overview->write_mutex));
 	// decide if im getting time here or doing that & storing it somewhere earlier
 	// so i just pass it to the func as an extra var
 	printf("[time] [philo] %s\n", msg);
-	pthread_mutex_unlock(overview->write_mutex);
+	pthread_mutex_unlock(&(overview->write_mutex));
 }
 
 // /* Less lenient version of atoi; a single - at the start is allowed, 
