@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/31 11:00:22 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/07 12:21:18 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/10 12:35:01 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,9 @@
 #include <pthread.h>
 #include <unistd.h> // for usleep()
 #include <sys/time.h> // for gettimeofday
+
+
+#include <stdio.h> // remove
 
 /** Sleep for the amount of time provided by the user. */
 void	philo_sleep(t_overview *overview)
@@ -31,6 +34,7 @@ void	philo_eat(t_overview *overview, t_philosopher *philo)
 
 	// lock both forks	
 	// phtread_mutex_lock(&mutex);
+	// i think this is already done inside grab? 
 
 	// print
 	print_with_lock(overview, MSG_EAT); // pass philo?
@@ -41,16 +45,24 @@ void	philo_eat(t_overview *overview, t_philosopher *philo)
 	gettimeofday(&time_struct, NULL);
 	philo->recent_meal = time_struct.tv_usec;
 
-	// unlock forks
+	pthread_mutex_unlock(&overview->forks[philo->philo_nbr - 1]);
+	pthread_mutex_unlock(&overview->forks[philo->philo_nbr + 1]);
 }
 
 // grab fork function
-void philo_grab(t_overview *overview)
+void philo_grab(t_overview *overview, t_philosopher *philo)
 {
-	// lock
-
-	// ???? grab ??? ? ? ?
-	print_with_lock(overview, MSG_FORK);
+	if (philo->philo_nbr == philo->overview->amount_to_eat)
+	{
+		printf("special case!\n");
+	}
+	else
+	{
+		pthread_mutex_lock(&overview->forks[philo->philo_nbr - 1]);
+		print_with_lock(overview, MSG_FORK);
+		pthread_mutex_lock(&overview->forks[philo->philo_nbr + 1]);
+		print_with_lock(overview, MSG_FORK);
+	}
 }
 
 /** Function to run when a philosopher is sleeping. */
