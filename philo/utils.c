@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/31 10:39:49 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/10 13:22:22 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/11 12:22:45 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,6 +64,7 @@ int	philo_atoi(const char *nptr)
 	return ((int)number);
 }
 
+/** Returns the time in milliseconds using gettimeofday. */
 unsigned int	get_time_msec(void)
 {
 	struct timeval	time_struct;
@@ -75,6 +76,9 @@ unsigned int	get_time_msec(void)
 	
 }
 
+/** Locks the write mutex and then prints the message in the format
+ * timestamp - philosopher number - action.
+ */
 void	print_with_lock(t_overview *overview, t_philosopher *philo, char *msg)
 {
 	unsigned int	current_time;
@@ -84,35 +88,7 @@ void	print_with_lock(t_overview *overview, t_philosopher *philo, char *msg)
 	pthread_mutex_lock(&(overview->write_mutex));
 	// decide if im getting time here or doing that & storing it somewhere earlier
 	// so i just pass it to the func as an extra var
-	printf("%d %i %s", current_time, philo->philo_nbr, msg);
+	printf("%d %i %s", current_time - overview->start_time_msec, philo->philo_nbr, msg);
+	// or dont do - startttime if it should be total time
 	pthread_mutex_unlock(&(overview->write_mutex));
 }
-
-// /* Less lenient version of atoi; a single - at the start is allowed, 
-// 	every other char needs to be a number. changes the 'valid' pointer 
-// 	to -1 upon invalid input */
-// int	philo_atoi(const char *nptr, int *valid)
-// {
-// 	int			i;
-// 	long long	number;
-
-// 	i = 0;
-// 	number = 0;
-// 	if (nptr[i] == '-')
-// 	{
-// 		*valid = -1;
-// 		return (0);
-// 	}
-// 	while (nptr[i] == '0')
-// 		i++;
-// 	if (ft_strlen(&(nptr[i])) > 10)
-// 		*valid = -1;
-// 	while (nptr[i] >= '0' && nptr[i] <= '9')
-// 	{
-// 		number = number * 10 + (nptr[i] - 48);
-// 		i++;
-// 	}
-// 	if (nptr[i] || number > 2147483647 || number < -2147483648)
-// 		*valid = -1;
-// 	return ((int)number);
-// }

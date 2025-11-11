@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 15:40:44 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/10 15:09:45 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/11 12:35:24 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,10 +27,10 @@ typedef struct s_overview
 {
 	int				philo_count;
 	int	time_to_die;
-	 int	time_to_eat;
-	 int	time_to_sleep;
+	int	time_to_eat;
+	int	time_to_sleep;
 	int				amount_to_eat;
-	bool			end_point_given; // set to false if not proivded by user
+	bool			max_food_arg_given; // set to false if not proivded by user
 	int				start_time_msec;
 	bool			someone_died;
 	pthread_mutex_t	write_mutex;
@@ -49,7 +49,8 @@ typedef struct s_philosopher
 	bool			alive; // set to true at start
 	pthread_t		philo_thread;
 	pthread_mutex_t	recent_meal_lock;
-	unsigned int	meal_count;
+	int	meal_count;
+	bool			hungry;
 }	t_philosopher;
 
 // actions
@@ -64,6 +65,9 @@ size_t			ft_strlen(const char *s);
 int				philo_atoi(const char *nptr);
 unsigned int	get_time_msec(void);
 void	print_with_lock(t_overview *overview, t_philosopher *philo, char *msg);
+
+// other
+bool	philo_full_check(t_philosopher *philo);
 
 
 // dont handi n

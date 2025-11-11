@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 15:39:04 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/11 11:35:46 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/11 16:23:47 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,54 +36,68 @@ bool	philo_death_check(t_philosopher *philo)
 	return (false);
 }
 
+bool	philo_full_check(t_philosopher *philo)
+{
+	if (philo->meal_count == philo->overview->amount_to_eat)
+	{
+		philo->hungry = false;
+		return (false);
+	}
+	return (true);
+}
+
 /** Philo function */
 void	*philo_function(void *arg)
 {
 	t_philosopher *philo;
 
 	philo = (t_philosopher *)arg;
-	// while (!philo->overview->someone_died)
+	// sep function for single philo
+	// if food to eat == 0, end immediately? 
+	// if time to die == 0, end imm?
 	while (1)
 	{
 		if (philo_death_check(philo))
+		{
 			philo_die(philo->overview, philo);
-		// if (philo->overview->philo_count % 2 == 0)
-		// {
+			break ;
+		}
 		if (philo->philo_nbr % 2 == 1)
 			usleep(1000);
 		philo_eat(philo->overview, philo);
+		if (!philo->hungry)
+			break ;
 		philo_sleep(philo->overview, philo);
 		philo_think(philo->overview, philo);
-		// }
-		// else
-		// {
-		// 	philo_eat(philo->overview, philo);
-		// 	philo_sleep(philo->overview, philo);
-		// 	philo_think(philo->overview, philo);
-		// }
-		if (philo_death_check(philo))
-			philo_die(philo->overview, philo);
-		usleep(50);
+		usleep(1000);
 	}
 	return (NULL);
 }
 
+/** Function ran by the watcher thread. */
 void	*watcher_function(void *arg)
 {
-	t_overview	*overview;
+	t_overview		*overview;
+	t_philosopher	*philos;
 
-	overview = (t_overview *)arg;
+	// overview = (t_overview *)arg;
+	philos = (t_philosopher *)arg;
+	overview = (philos[0]).overview;
 	while (1)
 	{
+		pthread_mutex_lock(&overview->death_mutex);
 		if (overview->someone_died == true)
 		{
-			// printf("SOMEONE DIED according to watcher\n");
 			pthread_mutex_lock(&overview->write_mutex);
-			printf("%d DEATH FOUND BY WATCHER!\n", get_time_msec());
+			printf("%d DEATH FOUND BY WATCHER!\n", get_time_msec() - overview->start_time_msec);
 			pthread_mutex_unlock(&overview->write_mutex);
-			break ;
+			pthread_mutex_unlock(&overview->death_mutex);
+			return (NULL) ;
 		}
-		usleep(100);
+		pthread_mutex_unlock(&overview->death_mutex);
+		// if (overview->someone_died == true)
+		// 	break;
+		usleep(1000);
 	}
 	return (NULL);
 }
@@ -118,17 +132,18 @@ bool	handle_args(int argc, char *argv[], t_overview *overview)
 	if (overview->time_to_sleep <= 0)
 		return (printf(MSG_INVALID_INPUT), false);
 	overview->amount_to_eat = 0;
-	overview->end_point_given = false;	
+	overview->max_food_arg_given = false;	
 	if (argc > 5)
 	{
 		overview->amount_to_eat = philo_atoi(argv[5]);
 		if (overview->amount_to_eat < 0)
 			return (printf(MSG_INVALID_INPUT), false);
-		overview->end_point_given = true;
+		overview->max_food_arg_given = true;
 	}
 	return (true);
 }
 
+/** Each philosopher struct is initialized with their needed values. */
 void	init_philo_info(t_overview *overview, t_philosopher *philos)
 {
 	int	i;
@@ -138,6 +153,7 @@ void	init_philo_info(t_overview *overview, t_philosopher *philos)
 	{
 		(philos[i]).philo_nbr = i + 1;
 		(philos[i]).alive = true;
+		(philos[i]).hungry = true;
 		(philos[i]).overview = overview; // possible data race ?? ? ? ? ?
 		(philos[i]).meal_count = 0;
 		(philos[i]).recent_meal = overview->start_time_msec;
@@ -157,25 +173,11 @@ void	create_philos(t_overview *overview, t_philosopher *philos)
 	init_philo_info(overview, philos);
 	while (i < overview->philo_count)
 	{
-		// (philos[i]).philo_nbr = i + 1;
-		// (philos[i]).alive = true;
-		// (philos[i]).overview = overview; // possible data race ?? ? ? ? ?
-		// (philos[i]).meal_count = 0;
-		// (philos[i]).recent_meal = overview->start_time_msec;
-		// pthread_mutex_init(&(philos[i]).recent_meal_lock, NULL);
-		// // err handling
 		pthread_create(&(philos[i]).philo_thread, NULL, philo_function, &philos[i]);
 		// err handling
 		i++;
 	}
-	// i = 0;
-	// while (i < overview->philo_count)
-	// {
-	// 	(philos[i]).recent_meal = overview->start_time_msec;
-	// 	i++;
-	// }
 }
-
 
 /** Set up the mutexes. */
 void	set_up(t_overview *overview)
@@ -185,7 +187,9 @@ void	set_up(t_overview *overview)
 	i = 0;
 	pthread_mutex_init(&(overview->write_mutex), NULL); 	// err
 	pthread_mutex_init(&(overview->death_mutex), NULL); 	// err
+	pthread_mutex_lock(&overview->death_mutex);
 	overview->someone_died = false;
+	pthread_mutex_unlock(&overview->death_mutex);
 
 	// set up watcher thread
 	pthread_create(&(overview->watcher), NULL, watcher_function, &overview);
@@ -243,7 +247,19 @@ int	main(int argc, char *argv[])
 	set_up(&overview);
 	create_philos(&overview, philos);
 	while (!overview.someone_died)
+	// while (1)
 	{
+		// pthread_mutex_lock(&overview.death_mutex);
+		// if (overview.someone_died == true)
+		// {
+		// 	printf("SOMEONE DIED according to main\n");
+		// 	pthread_mutex_unlock(&overview.death_mutex);
+		// 	break ;
+		// }
+		// pthread_mutex_unlock(&overview.death_mutex);
+		// // usleep(100);
+		if (overview.someone_died)
+			break ;
 		usleep(1000);
 	}
 	clean_up(&overview);
