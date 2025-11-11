@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 15:39:04 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/10 15:40:22 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/11 11:35:46 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,8 +27,8 @@ bool	philo_death_check(t_philosopher *philo)
 	// printf("running a death check!\n");
 	current_time = get_time_msec();
 	// erorr handling
-	printf("%i: rcurrent: %d // recent meal: %d diff: %d\n", 
-philo->philo_nbr, current_time, philo->recent_meal, current_time - philo->recent_meal);
+// 	printf("%i: current: %d // recent meal: %d diff: %d\n", 
+// philo->philo_nbr, current_time, philo->recent_meal, current_time - philo->recent_meal);
 	if (current_time - philo->recent_meal >= (unsigned int)philo->overview->time_to_die)
 	{
 		return (true);
@@ -42,34 +42,28 @@ void	*philo_function(void *arg)
 	t_philosopher *philo;
 
 	philo = (t_philosopher *)arg;
-	// usleep(1000);
-	while (!philo->overview->someone_died)
+	// while (!philo->overview->someone_died)
+	while (1)
 	{
 		if (philo_death_check(philo))
 			philo_die(philo->overview, philo);
-		if (philo->overview->philo_count % 2 == 0)
-		{
-			if (philo->philo_nbr % 2 == 0)
-				usleep(100);
-			// // more chekc
-			// if (philo_death_check(philo))
-			// 	philo_die(philo->overview, philo);
-			// real
-			philo_grab(philo->overview, philo);
-			philo_eat(philo->overview, philo);
-			philo_sleep(philo->overview, philo);
-			philo_think(philo->overview, philo);
-		}
-		else
-		{
-			philo_grab(philo->overview, philo);
-			philo_eat(philo->overview, philo);
-			philo_sleep(philo->overview, philo);
-			philo_think(philo->overview, philo);
-		}
+		// if (philo->overview->philo_count % 2 == 0)
+		// {
+		if (philo->philo_nbr % 2 == 1)
+			usleep(1000);
+		philo_eat(philo->overview, philo);
+		philo_sleep(philo->overview, philo);
+		philo_think(philo->overview, philo);
+		// }
+		// else
+		// {
+		// 	philo_eat(philo->overview, philo);
+		// 	philo_sleep(philo->overview, philo);
+		// 	philo_think(philo->overview, philo);
+		// }
 		if (philo_death_check(philo))
 			philo_die(philo->overview, philo);
-		usleep(1100);
+		usleep(50);
 	}
 	return (NULL);
 }
@@ -89,7 +83,7 @@ void	*watcher_function(void *arg)
 			pthread_mutex_unlock(&overview->write_mutex);
 			break ;
 		}
-		usleep(1000);
+		usleep(100);
 	}
 	return (NULL);
 }
@@ -135,6 +129,24 @@ bool	handle_args(int argc, char *argv[], t_overview *overview)
 	return (true);
 }
 
+void	init_philo_info(t_overview *overview, t_philosopher *philos)
+{
+	int	i;
+
+	i = 0;
+	while (i < overview->philo_count)
+	{
+		(philos[i]).philo_nbr = i + 1;
+		(philos[i]).alive = true;
+		(philos[i]).overview = overview; // possible data race ?? ? ? ? ?
+		(philos[i]).meal_count = 0;
+		(philos[i]).recent_meal = overview->start_time_msec;
+		pthread_mutex_init(&(philos[i]).recent_meal_lock, NULL);
+		// err handling
+		i++;
+	}
+}
+
 /** Create the threads to make philosophers. */
 void	create_philos(t_overview *overview, t_philosopher *philos)
 {
@@ -142,15 +154,16 @@ void	create_philos(t_overview *overview, t_philosopher *philos)
 
 	i = 0;
 	overview->start_time_msec = get_time_msec();
+	init_philo_info(overview, philos);
 	while (i < overview->philo_count)
 	{
-		(philos[i]).philo_nbr = i + 1;
-		(philos[i]).alive = true;
-		(philos[i]).overview = overview;
-		(philos[i]).meal_count = 0;
-		(philos[i]).recent_meal = overview->start_time_msec;
-		pthread_mutex_init(&(philos[i]).recent_meal_lock, NULL);
-		// err handling
+		// (philos[i]).philo_nbr = i + 1;
+		// (philos[i]).alive = true;
+		// (philos[i]).overview = overview; // possible data race ?? ? ? ? ?
+		// (philos[i]).meal_count = 0;
+		// (philos[i]).recent_meal = overview->start_time_msec;
+		// pthread_mutex_init(&(philos[i]).recent_meal_lock, NULL);
+		// // err handling
 		pthread_create(&(philos[i]).philo_thread, NULL, philo_function, &philos[i]);
 		// err handling
 		i++;
@@ -162,6 +175,7 @@ void	create_philos(t_overview *overview, t_philosopher *philos)
 	// 	i++;
 	// }
 }
+
 
 /** Set up the mutexes. */
 void	set_up(t_overview *overview)
