@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/31 11:00:22 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/11 16:08:22 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/11 17:02:23 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,13 +27,12 @@ void	philo_sleep(t_overview *overview, t_philosopher *philo)
 /** The philosopher locks both forks, waits, then updates the time since it
  * last ate, then unlocks the forks again.
  */
-void	philo_eat(t_overview *overview, t_philosopher *philo)
+bool	philo_eat(t_overview *overview, t_philosopher *philo)
 {
 	philo_grab(philo->overview, philo);
-	// print
-	print_with_lock(overview, philo, MSG_EAT); // pass philo?
-
-	// store recent meal
+	if (philo_death_check(philo)) // or inside grab as well? OR have watcher handle these?
+		return (false);
+	print_with_lock(overview, philo, MSG_EAT);
 	pthread_mutex_lock(&philo->recent_meal_lock);
 	philo->recent_meal = get_time_msec();// error handing
 	philo->meal_count += 1;
@@ -45,25 +44,12 @@ void	philo_eat(t_overview *overview, t_philosopher *philo)
 	pthread_mutex_unlock(&overview->forks[philo->philo_nbr % overview->philo_count]);
 	if (overview->max_food_arg_given)
 		philo_full_check(philo);
+	return (true);
 }
 
 // grab fork function
 void philo_grab(t_overview *overview, t_philosopher *philo)
 {
-	// if (philo->philo_nbr % 2 == 0)
-	// {
-	// 	pthread_mutex_lock(&overview->forks[philo->philo_nbr % overview->philo_count]);
-	// 	print_with_lock(overview, philo, MSG_FORK);
-	// 	pthread_mutex_lock(&overview->forks[philo->philo_nbr - 1]);
-	// 	print_with_lock(overview, philo, MSG_FORK);
-	// }
-	// else
-	// {
-	// 	pthread_mutex_lock(&overview->forks[philo->philo_nbr - 1]);
-	// 	print_with_lock(overview, philo, MSG_FORK);
-	// 	pthread_mutex_lock(&overview->forks[philo->philo_nbr % overview->philo_count]);
-	// 	print_with_lock(overview, philo, MSG_FORK);
-	// }
 	pthread_mutex_lock(&overview->forks[philo->philo_nbr % overview->philo_count]);
 	print_with_lock(overview, philo, MSG_FORK);
 	pthread_mutex_lock(&overview->forks[philo->philo_nbr - 1]);

@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 15:39:04 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/11 16:23:47 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/11 17:16:43 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,12 +30,11 @@ bool	philo_death_check(t_philosopher *philo)
 // 	printf("%i: current: %d // recent meal: %d diff: %d\n", 
 // philo->philo_nbr, current_time, philo->recent_meal, current_time - philo->recent_meal);
 	if (current_time - philo->recent_meal >= (unsigned int)philo->overview->time_to_die)
-	{
 		return (true);
-	}
 	return (false);
 }
 
+/** Check if all philosophers have eaten the proper amount of meals. */
 bool	philo_full_check(t_philosopher *philo)
 {
 	if (philo->meal_count == philo->overview->amount_to_eat)
@@ -52,10 +51,18 @@ void	*philo_function(void *arg)
 	t_philosopher *philo;
 
 	philo = (t_philosopher *)arg;
-	// sep function for single philo
+	if (philo->overview->philo_count == 1)
+	{
+		// sep function for single philo
+		printf("grab a fork\n");
+		usleep(philo->overview->time_to_die);
+		philo->overview->someone_died = true;
+		printf("died! whoops\n");
+		return (NULL);
+	}
 	// if food to eat == 0, end immediately? 
 	// if time to die == 0, end imm?
-	while (1)
+	while (!philo->overview->someone_died)
 	{
 		if (philo_death_check(philo))
 		{
@@ -64,12 +71,15 @@ void	*philo_function(void *arg)
 		}
 		if (philo->philo_nbr % 2 == 1)
 			usleep(1000);
-		philo_eat(philo->overview, philo);
+		if (!philo_eat(philo->overview, philo))
+		{
+			philo_die(philo->overview, philo);
+			break ;
+		}
 		if (!philo->hungry)
 			break ;
 		philo_sleep(philo->overview, philo);
 		philo_think(philo->overview, philo);
-		usleep(1000);
 	}
 	return (NULL);
 }
@@ -83,14 +93,23 @@ void	*watcher_function(void *arg)
 	// overview = (t_overview *)arg;
 	philos = (t_philosopher *)arg;
 	overview = (philos[0]).overview;
+	// int	i;
 	while (1)
 	{
+		// i = 0;
+		// while (i <= overview->philo_count)
+		// {
+		// 	if (philo_death_check(&philos[i]) == true)
+		// 		philo_die(overview, &philos[i]);
+		// 	i++;
+		// }
+
 		pthread_mutex_lock(&overview->death_mutex);
 		if (overview->someone_died == true)
 		{
-			pthread_mutex_lock(&overview->write_mutex);
-			printf("%d DEATH FOUND BY WATCHER!\n", get_time_msec() - overview->start_time_msec);
-			pthread_mutex_unlock(&overview->write_mutex);
+			// pthread_mutex_lock(&overview->write_mutex);
+			// printf("%d DEATH FOUND BY WATCHER!\n", get_time_msec() - overview->start_time_msec);
+			// pthread_mutex_unlock(&overview->write_mutex);
 			pthread_mutex_unlock(&overview->death_mutex);
 			return (NULL) ;
 		}
@@ -247,7 +266,6 @@ int	main(int argc, char *argv[])
 	set_up(&overview);
 	create_philos(&overview, philos);
 	while (!overview.someone_died)
-	// while (1)
 	{
 		// pthread_mutex_lock(&overview.death_mutex);
 		// if (overview.someone_died == true)
@@ -257,9 +275,12 @@ int	main(int argc, char *argv[])
 		// 	break ;
 		// }
 		// pthread_mutex_unlock(&overview.death_mutex);
-		// // usleep(100);
-		if (overview.someone_died)
-			break ;
+		// usleep(100);
+		// if (overview.someone_died)
+		// {
+		// 	printf("someone died in MAIN\n");
+		// 	break ;
+		// }
 		usleep(1000);
 	}
 	clean_up(&overview);
