@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 15:40:44 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/11 17:03:37 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/12 15:20:27 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,9 +56,9 @@ typedef struct s_philosopher
 // actions
 void	philo_sleep(t_overview *overview, t_philosopher *philo);
 bool	philo_eat(t_overview *overview, t_philosopher *philo);
-void	philo_grab(t_overview *overview, t_philosopher *philo);
+bool	philo_grab(t_overview *overview, t_philosopher *philo);
 void	philo_think(t_overview *overview, t_philosopher *philo);
-void	philo_die(t_overview *overview, t_philosopher *philo);
+void	*philo_die(t_overview *overview, t_philosopher *philo);
 
 // utils
 size_t			ft_strlen(const char *s);
@@ -69,7 +69,7 @@ void	print_with_lock(t_overview *overview, t_philosopher *philo, char *msg);
 // other
 bool	philo_full_check(t_philosopher *philo);
 bool	philo_death_check(t_philosopher *philo);
-
+bool	check_all_alive(t_overview *overview);
 
 // dont handi n
 void print_overview(t_overview *overview);

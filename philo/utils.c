@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/31 10:39:49 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/11 12:22:45 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/12 15:46:41 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,11 +84,12 @@ void	print_with_lock(t_overview *overview, t_philosopher *philo, char *msg)
 	unsigned int	current_time;
 
 	current_time = get_time_msec(); // err handlgin
-	
 	pthread_mutex_lock(&(overview->write_mutex));
-	// decide if im getting time here or doing that & storing it somewhere earlier
-	// so i just pass it to the func as an extra var
+	if (!check_all_alive(overview) && msg[0] != 'd' && msg[0] != 'E')
+	{
+		pthread_mutex_unlock(&(overview->write_mutex));
+		return ;
+	}
 	printf("%d %i %s", current_time - overview->start_time_msec, philo->philo_nbr, msg);
-	// or dont do - startttime if it should be total time
 	pthread_mutex_unlock(&(overview->write_mutex));
 }
