@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 15:40:44 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/12 15:20:27 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/12 15:57:04 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,11 +32,11 @@ typedef struct s_overview
 	int				amount_to_eat;
 	bool			max_food_arg_given; // set to false if not proivded by user
 	int				start_time_msec;
-	bool			someone_died;
+	bool			done;
 	pthread_mutex_t	write_mutex;
-	pthread_mutex_t	death_mutex;
+	pthread_mutex_t	done_mutex;
 	pthread_mutex_t	forks[MAX_PHILO_COUNT];
-	pthread_t		watcher;
+	// pthread_t		watcher;
 	// t_philosopher	*philosophers;
 }	t_overview;
 
@@ -69,7 +69,7 @@ void	print_with_lock(t_overview *overview, t_philosopher *philo, char *msg);
 // other
 bool	philo_full_check(t_philosopher *philo);
 bool	philo_death_check(t_philosopher *philo);
-bool	check_all_alive(t_overview *overview);
+bool	check_keep_going(t_overview *overview);
 
 // dont handi n
 void print_overview(t_overview *overview);

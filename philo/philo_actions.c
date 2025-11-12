@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/31 11:00:22 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/12 15:42:27 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/12 15:57:04 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,14 +36,14 @@ bool	philo_eat(t_overview *overview, t_philosopher *philo)
 	// 	philo_die(overview, philo);
 	// 	return (false);
 	// }
-	if (overview->someone_died)
+	if (overview->done)
 		return (false);
 	print_with_lock(overview, philo, MSG_EAT);
 	pthread_mutex_lock(&philo->recent_meal_lock);
 	philo->recent_meal = get_time_msec();// error handing
 	philo->meal_count += 1;
 	pthread_mutex_unlock(&philo->recent_meal_lock);
-	if (overview->someone_died)
+	if (overview->done)
 	{
 		pthread_mutex_unlock(&overview->forks[philo->philo_nbr - 1]);
 		pthread_mutex_unlock(&overview->forks[philo->philo_nbr % overview->philo_count]);
@@ -62,10 +62,10 @@ bool philo_grab(t_overview *overview, t_philosopher *philo)
 {
 	if (philo->philo_nbr % 2 == 0)
 	{
-		// if (!check_all_alive(overview))
+		// if (!check_keep_going(overview))
 		// 	return (false);
 		pthread_mutex_lock(&overview->forks[philo->philo_nbr % overview->philo_count]);
-		if (!check_all_alive(overview))
+		if (!check_keep_going(overview))
 			return (false);
 		print_with_lock(overview, philo, MSG_FORK);
 		// if (philo_death_check(philo))
@@ -73,7 +73,7 @@ bool philo_grab(t_overview *overview, t_philosopher *philo)
 		// 	pthread_mutex_unlock(&overview->forks[philo->philo_nbr % overview->philo_count]);
 		// 	return (false);
 		// }
-		// if (!check_all_alive(overview))
+		// if (!check_keep_going(overview))
 		// {
 		// 	pthread_mutex_unlock(&overview->forks[philo->philo_nbr % overview->philo_count]);
 		// 	return (false);
@@ -84,7 +84,7 @@ bool philo_grab(t_overview *overview, t_philosopher *philo)
 			pthread_mutex_unlock(&overview->forks[philo->philo_nbr % overview->philo_count]);
 			return (false);
 		}
-		if (!check_all_alive(overview))
+		if (!check_keep_going(overview))
 		{
 			pthread_mutex_unlock(&overview->forks[philo->philo_nbr % overview->philo_count]);
 			return (false);
@@ -93,7 +93,7 @@ bool philo_grab(t_overview *overview, t_philosopher *philo)
 	}
 	else
 	{
-		if (!check_all_alive(overview))
+		if (!check_keep_going(overview))
 			return (false);
 		if (philo_death_check(philo))
 			return (false);
@@ -104,7 +104,7 @@ bool philo_grab(t_overview *overview, t_philosopher *philo)
 			pthread_mutex_lock(&overview->forks[philo->philo_nbr - 1]);
 			return (false);
 		}
-		if (!check_all_alive(overview))
+		if (!check_keep_going(overview))
 		{
 			pthread_mutex_lock(&overview->forks[philo->philo_nbr - 1]);
 			return (false);
@@ -126,9 +126,9 @@ void	philo_think(t_overview *overview, t_philosopher *philo)
  */
 void	*philo_die(t_overview *overview, t_philosopher *philo)
 {
-	// pthread_mutex_lock(&(overview->death_mutex));
-	// overview->someone_died = true;
-	// pthread_mutex_unlock(&(overview->death_mutex));
+	// pthread_mutex_lock(&(overview->done_mutex));
+	// overview->done = true;
+	// pthread_mutex_unlock(&(overview->done_mutex));
 	print_with_lock(overview, philo, MSG_DIE);
 	return (NULL);
 }

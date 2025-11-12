@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 15:39:04 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/12 15:43:35 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/12 16:00:31 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,18 +17,17 @@
 #include <pthread.h>  // for threading
 # include <unistd.h> // for usleep()
 
-bool	check_all_alive(t_overview *overview)
+bool	check_keep_going(t_overview *overview)
 {
-	pthread_mutex_lock(&(overview->death_mutex));
-	if (overview->someone_died)
+	pthread_mutex_lock(&(overview->done_mutex));
+	if (overview->done)
 	{
-		pthread_mutex_unlock(&(overview->death_mutex));
+		pthread_mutex_unlock(&(overview->done_mutex));
 		return (false);
 	}
-	pthread_mutex_unlock(&(overview->death_mutex));
+	pthread_mutex_unlock(&(overview->done_mutex));
 	return (true);
 }
-
 
 /** Checks whether a philosopher has died by comparing time since most
  * recent meal to time to die (both in msec).
@@ -46,9 +45,9 @@ bool	philo_death_check(t_philosopher *philo)
 // philo->philo_nbr, current_time, philo->recent_meal, current_time - philo->recent_meal);
 	if (current_time - philo->recent_meal >= (unsigned int)philo->overview->time_to_die)
 	{
-		pthread_mutex_lock(&(overview->death_mutex));
-		overview->someone_died = true;
-		pthread_mutex_unlock(&(overview->death_mutex));
+		pthread_mutex_lock(&(overview->done_mutex));
+		overview->done = true;
+		pthread_mutex_unlock(&(overview->done_mutex));
 		return (true);
 	}
 	return (false);
@@ -76,30 +75,30 @@ void	*philo_function(void *arg)
 		// sep function for single philo
 		printf("grab a fork\n");
 		usleep(philo->overview->time_to_die);
-		philo->overview->someone_died = true;
+		philo->overview->done = true;
 		printf("died! whoops\n");
 		return (NULL);
 	}
 	// if food to eat == 0, end immediately? 
 	// if time to die == 0, end imm?
-	while (!philo->overview->someone_died)
+	while (!philo->overview->done)
 	{
 		// if (philo_death_check(philo))
 		// 	return (philo_die(philo->overview, philo));
 		if (philo->philo_nbr % 2 == 1)
 			usleep(1000);
-		if (!check_all_alive(philo->overview))
+		if (!check_keep_going(philo->overview))
 			return (print_with_lock(philo->overview, philo, "EXITING\n"), NULL);
 		if (!philo_eat(philo->overview, philo))
 			break ;
-		if (!check_all_alive(philo->overview))
+		if (!check_keep_going(philo->overview))
 			return (print_with_lock(philo->overview, philo, "EXITING\n"), NULL);
 		if (!philo->hungry)
 			break ;
-		if (!check_all_alive(philo->overview))
+		if (!check_keep_going(philo->overview))
 			return (print_with_lock(philo->overview, philo, "EXITING\n"), NULL);
 		philo_sleep(philo->overview, philo);
-		if (!check_all_alive(philo->overview))
+		if (!check_keep_going(philo->overview))
 			return (print_with_lock(philo->overview, philo, "EXITING\n"), NULL);
 		philo_think(philo->overview, philo);
 	}
@@ -126,35 +125,79 @@ void	*philo_function(void *arg)
 // 		// 	i++;
 // 		// }
 
-// 		pthread_mutex_lock(&overview->death_mutex);
-// 		if (overview->someone_died == true)
+// 		pthread_mutex_lock(&overview->done_mutex);
+// 		if (overview->done == true)
 // 		{
 // 			// pthread_mutex_lock(&overview->write_mutex);
 // 			// printf("%d DEATH FOUND BY WATCHER!\n", get_time_msec() - overview->start_time_msec);
 // 			// pthread_mutex_unlock(&overview->write_mutex);
-// 			pthread_mutex_unlock(&overview->death_mutex);
+// 			pthread_mutex_unlock(&overview->done_mutex);
 // 			return (NULL) ;
 // 		}
-// 		pthread_mutex_unlock(&overview->death_mutex);
-// 		// if (overview->someone_died == true)
+// 		pthread_mutex_unlock(&overview->done_mutex);
+// 		// if (overview->done == true)
 // 		// 	break;
 // 		usleep(1000);
 // 	}
 // 	return (NULL);
 // }
 
-/** Function ran by the watcher thread. */
-void	*watcher_function(void *arg)
-{
-	t_overview		*overview;
-	t_philosopher	*philos;
-	// int				philo_count;
+// /** Function ran by the watcher thread. */
+// void	*watcher_function(void *arg)
+// {
+// 	t_overview		*overview;
+// 	t_philosopher	*philos;
+// 	// int				philo_count;
 
-	philos = (t_philosopher *)arg;
-	usleep(1000);
-	overview = (philos[0]).overview;
-	// philo_count = philos->overview->philo_count;
+// 	philos = (t_philosopher *)arg;
+// 	usleep(1000);
+// 	overview = (philos[0]).overview;
+// 	// philo_count = philos->overview->philo_count;
+// 	int	i;
+// 	while (1)
+// 	{
+// 		i = 0;
+// 		while (i < overview->philo_count)
+// 		{
+// 			if (!(philos[i]).hungry)
+// 			{
+// 				print_with_lock(overview, &(philos[i]), "FOUND ATE ENOUGH IN WATCHER\n");
+// 				pthread_mutex_lock(&(overview->done_mutex));
+// 				overview->done = true;
+// 				pthread_mutex_unlock(&(overview->done_mutex));
+// 				return (NULL);
+// 			}
+// 			if (philo_death_check(&philos[i]) == true)
+// 			{
+// 				print_with_lock(overview, &(philos[i]), "FOUND DEAD IN WATCHER\n");
+// 				return (philo_die(overview, &philos[i]));
+// 			}
+// 			i++;
+// 		}
+
+// 		// printf("watcher check: %i\n", philo_count);
+
+// 		// pthread_mutex_lock(&overview->done_mutex);
+// 		// if (overview->done == true)
+// 		// {
+// 		// 	// pthread_mutex_lock(&overview->write_mutex);
+// 		// 	// printf("%d DEATH FOUND BY WATCHER!\n", get_time_msec() - overview->start_time_msec);
+// 		// 	// pthread_mutex_unlock(&overview->write_mutex);
+// 		// 	pthread_mutex_unlock(&overview->done_mutex);
+// 		// 	return (NULL) ;
+// 		// }
+// 		// pthread_mutex_unlock(&overview->done_mutex);
+// 		// if (overview->done == true)
+// 		// 	break;
+// 	}
+// 	return (NULL);
+// }
+
+/** Function ran by the main thread. */
+void	*watcher_function(t_overview *overview, t_philosopher *philos)
+{
 	int	i;
+
 	while (1)
 	{
 		i = 0;
@@ -163,9 +206,9 @@ void	*watcher_function(void *arg)
 			if (!(philos[i]).hungry)
 			{
 				print_with_lock(overview, &(philos[i]), "FOUND ATE ENOUGH IN WATCHER\n");
-				pthread_mutex_lock(&(overview->death_mutex));
-				overview->someone_died = true;
-				pthread_mutex_unlock(&(overview->death_mutex));
+				pthread_mutex_lock(&(overview->done_mutex));
+				overview->done = true;
+				pthread_mutex_unlock(&(overview->done_mutex));
 				return (NULL);
 			}
 			if (philo_death_check(&philos[i]) == true)
@@ -175,21 +218,6 @@ void	*watcher_function(void *arg)
 			}
 			i++;
 		}
-
-		// printf("watcher check: %i\n", philo_count);
-
-		// pthread_mutex_lock(&overview->death_mutex);
-		// if (overview->someone_died == true)
-		// {
-		// 	// pthread_mutex_lock(&overview->write_mutex);
-		// 	// printf("%d DEATH FOUND BY WATCHER!\n", get_time_msec() - overview->start_time_msec);
-		// 	// pthread_mutex_unlock(&overview->write_mutex);
-		// 	pthread_mutex_unlock(&overview->death_mutex);
-		// 	return (NULL) ;
-		// }
-		// pthread_mutex_unlock(&overview->death_mutex);
-		// if (overview->someone_died == true)
-		// 	break;
 	}
 	return (NULL);
 }
@@ -278,15 +306,16 @@ void	set_up(t_overview *overview, t_philosopher *philos)
 	int	i;
 
 	i = 0;
+	(void)philos;
 	pthread_mutex_init(&(overview->write_mutex), NULL); 	// err
-	pthread_mutex_init(&(overview->death_mutex), NULL); 	// err
-	pthread_mutex_lock(&overview->death_mutex);
-	overview->someone_died = false;
-	pthread_mutex_unlock(&overview->death_mutex);
+	pthread_mutex_init(&(overview->done_mutex), NULL); 	// err
+	pthread_mutex_lock(&overview->done_mutex);
+	overview->done = false;
+	pthread_mutex_unlock(&overview->done_mutex);
 
 	// set up watcher thread
 	// pthread_create(&(overview->watcher), NULL, watcher_function, &overview);
-	pthread_create(&(overview->watcher), NULL, watcher_function, philos);
+	// pthread_create(&(overview->watcher), NULL, watcher_function, philos);
 	// err
 
 	// set up forks
@@ -303,7 +332,7 @@ void	clean_up(t_overview *overview)
 	int	i;
 	
 	pthread_mutex_destroy(&(overview->write_mutex));
-	pthread_mutex_destroy(&(overview->death_mutex));
+	pthread_mutex_destroy(&(overview->done_mutex));
 	// other mutexes destroy
 	i = 0;
 	while (i < overview->philo_count)
@@ -311,7 +340,7 @@ void	clean_up(t_overview *overview)
 		pthread_mutex_destroy(&(overview->forks[i]));
 		i++;
 	}
-	pthread_join(overview->watcher, NULL); // err
+	// pthread_join(overview->watcher, NULL); // err
 }
 
 void	join_philos(t_philosopher *philos)
@@ -339,8 +368,11 @@ int	main(int argc, char *argv[])
 	// fail handle ???
 	create_philos(&overview, philos);
 	set_up(&overview, philos);
-	while (check_all_alive(&overview))
-		usleep(1000);
+	while (check_keep_going(&overview))
+	{
+		watcher_function(&overview, philos);
+		
+	}
 	clean_up(&overview);
 	join_philos(philos);
 	return (EXIT_SUCCESS);
