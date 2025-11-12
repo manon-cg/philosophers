@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 15:39:04 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/12 16:16:56 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/12 17:20:20 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,12 +65,11 @@ bool	philo_full_check(t_philosopher *philo)
 }
 
 /** Functions for when a philosopher is all alone. */
-void	*solo_philo(t_philosopher *philo)
+void	*lonely_philo_function(t_philosopher *philo)
 {
-	printf("grab a fork\n");
+	// actually grab ? for pretend?
+	print_with_lock(philo->overview, philo, MSG_FORK);
 	usleep(philo->overview->time_to_die);
-	philo->overview->done = true;
-	printf("died! whoops\n");
 	return (NULL);
 }
 
@@ -81,13 +80,18 @@ void	*philo_function(void *arg)
 
 	philo = (t_philosopher *)arg;
 	if (philo->overview->philo_count == 1)
-		return(solo_philo(philo));
+		return(lonely_philo_function(philo));
 	while (!philo->overview->done)
 	{
 		// if (philo_death_check(philo))
 		// 	return (philo_die(philo->overview, philo));
 		if (philo->philo_nbr % 2 == 1)
-			usleep(1000);
+		{
+			usleep(200);
+			// usleep((philo->overview->time_to_die - get_time_msec() - philo->recent_meal) - philo->overview->time_to_eat / 2);
+		}
+		else
+			usleep(20);
 		if (!check_keep_going(philo->overview))
 			return (print_with_lock(philo->overview, philo, "EXITING\n"), NULL);
 		if (!philo_eat(philo->overview, philo))
