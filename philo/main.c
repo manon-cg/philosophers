@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 15:39:04 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/12 16:00:31 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/12 16:16:56 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,6 +64,16 @@ bool	philo_full_check(t_philosopher *philo)
 	return (true);
 }
 
+/** Functions for when a philosopher is all alone. */
+void	*solo_philo(t_philosopher *philo)
+{
+	printf("grab a fork\n");
+	usleep(philo->overview->time_to_die);
+	philo->overview->done = true;
+	printf("died! whoops\n");
+	return (NULL);
+}
+
 /** Philo function */
 void	*philo_function(void *arg)
 {
@@ -71,16 +81,7 @@ void	*philo_function(void *arg)
 
 	philo = (t_philosopher *)arg;
 	if (philo->overview->philo_count == 1)
-	{
-		// sep function for single philo
-		printf("grab a fork\n");
-		usleep(philo->overview->time_to_die);
-		philo->overview->done = true;
-		printf("died! whoops\n");
-		return (NULL);
-	}
-	// if food to eat == 0, end immediately? 
-	// if time to die == 0, end imm?
+		return(solo_philo(philo));
 	while (!philo->overview->done)
 	{
 		// if (philo_death_check(philo))
@@ -371,7 +372,6 @@ int	main(int argc, char *argv[])
 	while (check_keep_going(&overview))
 	{
 		watcher_function(&overview, philos);
-		
 	}
 	clean_up(&overview);
 	join_philos(philos);

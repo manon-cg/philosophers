@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 15:40:44 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/12 15:57:04 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/12 16:03:37 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@
 # define MSG_SLEEP "is sleeping\n"
 # define MSG_THINK "is thinking\n"
 # define MSG_DIE "died\n"
-# define MSG_INVALID_INPUT "Make sure all inputs are valid positive ints\n"
+# define MSG_INVALID_INPUT "Make sure all inputs are valid positive ints.\n"
 
 // large struct for all relevant infooo
 typedef struct s_overview
