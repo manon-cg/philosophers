@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 15:39:04 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/12 17:20:20 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/13 12:59:43 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,6 +73,7 @@ void	*lonely_philo_function(t_philosopher *philo)
 	return (NULL);
 }
 
+
 /** Philo function */
 void	*philo_function(void *arg)
 {
@@ -81,7 +82,8 @@ void	*philo_function(void *arg)
 	philo = (t_philosopher *)arg;
 	if (philo->overview->philo_count == 1)
 		return(lonely_philo_function(philo));
-	while (!philo->overview->done)
+	// while (!philo->overview->done)
+	while (check_keep_going(philo->overview))
 	{
 		// if (philo_death_check(philo))
 		// 	return (philo_die(philo->overview, philo));
@@ -92,19 +94,19 @@ void	*philo_function(void *arg)
 		}
 		else
 			usleep(20);
-		if (!check_keep_going(philo->overview))
-			return (print_with_lock(philo->overview, philo, "EXITING\n"), NULL);
+		// if (!check_keep_going(philo->overview))
+		// 	return (print_with_lock(philo->overview, philo, "EXITING\n"), NULL);
 		if (!philo_eat(philo->overview, philo))
 			break ;
-		if (!check_keep_going(philo->overview))
-			return (print_with_lock(philo->overview, philo, "EXITING\n"), NULL);
+		// if (!check_keep_going(philo->overview))
+		// 	return (print_with_lock(philo->overview, philo, "EXITING\n"), NULL);
 		if (!philo->hungry)
 			break ;
-		if (!check_keep_going(philo->overview))
-			return (print_with_lock(philo->overview, philo, "EXITING\n"), NULL);
+		// if (!check_keep_going(philo->overview))
+		// 	return (print_with_lock(philo->overview, philo, "EXITING\n"), NULL);
 		philo_sleep(philo->overview, philo);
-		if (!check_keep_going(philo->overview))
-			return (print_with_lock(philo->overview, philo, "EXITING\n"), NULL);
+		// if (!check_keep_going(philo->overview))
+		// 	return (print_with_lock(philo->overview, philo, "EXITING\n"), NULL);
 		philo_think(philo->overview, philo);
 	}
 	return (NULL);

@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/31 11:00:22 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/12 15:57:04 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/13 13:14:54 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,8 +36,8 @@ bool	philo_eat(t_overview *overview, t_philosopher *philo)
 	// 	philo_die(overview, philo);
 	// 	return (false);
 	// }
-	if (overview->done)
-		return (false);
+	// if (overview->done)
+	// 	return (false);
 	print_with_lock(overview, philo, MSG_EAT);
 	pthread_mutex_lock(&philo->recent_meal_lock);
 	philo->recent_meal = get_time_msec();// error handing
@@ -65,8 +65,8 @@ bool philo_grab(t_overview *overview, t_philosopher *philo)
 		// if (!check_keep_going(overview))
 		// 	return (false);
 		pthread_mutex_lock(&overview->forks[philo->philo_nbr % overview->philo_count]);
-		if (!check_keep_going(overview))
-			return (false);
+		// if (!check_keep_going(overview))
+		// 	return (false);
 		print_with_lock(overview, philo, MSG_FORK);
 		// if (philo_death_check(philo))
 		// {
@@ -79,36 +79,36 @@ bool philo_grab(t_overview *overview, t_philosopher *philo)
 		// 	return (false);
 		// }
 		pthread_mutex_lock(&overview->forks[philo->philo_nbr - 1]);
-		if (philo_death_check(philo))
-		{
-			pthread_mutex_unlock(&overview->forks[philo->philo_nbr % overview->philo_count]);
-			return (false);
-		}
-		if (!check_keep_going(overview))
-		{
-			pthread_mutex_unlock(&overview->forks[philo->philo_nbr % overview->philo_count]);
-			return (false);
-		}
+		// if (philo_death_check(philo))
+		// {
+		// 	pthread_mutex_unlock(&overview->forks[philo->philo_nbr % overview->philo_count]);
+		// 	return (false);
+		// }
+		// if (!check_keep_going(overview))
+		// {
+		// 	pthread_mutex_unlock(&overview->forks[philo->philo_nbr % overview->philo_count]);
+		// 	return (false);
+		// }
 		print_with_lock(overview, philo, MSG_FORK);
 	}
 	else
 	{
-		if (!check_keep_going(overview))
-			return (false);
-		if (philo_death_check(philo))
-			return (false);
+		// if (!check_keep_going(overview))
+		// 	return (false);
+		// if (philo_death_check(philo))
+		// 	return (false);
 		pthread_mutex_lock(&overview->forks[philo->philo_nbr - 1]);
 		print_with_lock(overview, philo, MSG_FORK);
-		if (philo_death_check(philo))
-		{
-			pthread_mutex_lock(&overview->forks[philo->philo_nbr - 1]);
-			return (false);
-		}
-		if (!check_keep_going(overview))
-		{
-			pthread_mutex_lock(&overview->forks[philo->philo_nbr - 1]);
-			return (false);
-		}
+		// if (philo_death_check(philo))
+		// {
+		// 	pthread_mutex_lock(&overview->forks[philo->philo_nbr - 1]);
+		// 	return (false);
+		// }
+		// if (!check_keep_going(overview))
+		// {
+		// 	pthread_mutex_lock(&overview->forks[philo->philo_nbr - 1]);
+		// 	return (false);
+		// }
 		pthread_mutex_lock(&overview->forks[philo->philo_nbr % overview->philo_count]);
 		print_with_lock(overview, philo, MSG_FORK);
 	}
