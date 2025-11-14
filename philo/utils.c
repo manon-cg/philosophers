@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/31 10:39:49 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/14 15:14:46 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/14 15:53:44 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include <stdio.h> // for printf()
 #include <sys/time.h> // for gettimeofday
 #include <pthread.h>
+#include <unistd.h> // for write()
 
 // void	*ft_calloc(size_t nmemb, size_t size)
 // {
@@ -93,4 +94,13 @@ void	print_with_lock(t_overview *overview, t_philosopher *philo, char *msg)
 	printf("%d %i %s", current_time - overview->start_time_msec,
 		philo->philo_nbr, msg);
 	pthread_mutex_unlock(&(overview->write_mutex));
+}
+
+/** Print a message on how to properly use philosophers. 
+ * @param message String about either correct philosopher argument order, or 
+ * about how the arguments should be positive ints.
+*/
+void	print_arg_error(char *message)
+{
+	write(2, message, ft_strlen(message));
 }
