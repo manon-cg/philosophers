@@ -8,6 +8,7 @@ HEADER = philo.h
 OBJ = $(SRC:.c=.o)
 
 FLAGS = -Wall -Wextra -Werror -g
+# FLAGS = -Wall -Wextra -Werror -g -fsanitize=thread
 
 all : $(NAME)
 

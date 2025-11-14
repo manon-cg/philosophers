@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 15:39:04 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/13 12:59:43 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/14 15:31:54 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,10 @@
 #include <pthread.h>  // for threading
 # include <unistd.h> // for usleep()
 
+/** Checks whether the 'done' bool has been set to true. Has to lock and 
+ * unlock the done_mutex.
+ * @param overview Struct with info about the program.
+ */
 bool	check_keep_going(t_overview *overview)
 {
 	pthread_mutex_lock(&(overview->done_mutex));
@@ -43,13 +47,16 @@ bool	philo_death_check(t_philosopher *philo)
 	// erorr handling
 // 	printf("%i: current: %d // recent meal: %d diff: %d\n", 
 // philo->philo_nbr, current_time, philo->recent_meal, current_time - philo->recent_meal);
+	pthread_mutex_lock(&(philo->recent_meal_lock));
 	if (current_time - philo->recent_meal >= (unsigned int)philo->overview->time_to_die)
 	{
+		pthread_mutex_unlock(&(philo->recent_meal_lock));
 		pthread_mutex_lock(&(overview->done_mutex));
 		overview->done = true;
 		pthread_mutex_unlock(&(overview->done_mutex));
 		return (true);
 	}
+	pthread_mutex_unlock(&(philo->recent_meal_lock));
 	return (false);
 }
 
@@ -73,20 +80,18 @@ void	*lonely_philo_function(t_philosopher *philo)
 	return (NULL);
 }
 
-
 /** Philo function */
 void	*philo_function(void *arg)
 {
 	t_philosopher *philo;
 
 	philo = (t_philosopher *)arg;
+	pthread_mutex_lock(&philo->overview->start_mutex);
+	pthread_mutex_unlock(&philo->overview->start_mutex);
 	if (philo->overview->philo_count == 1)
 		return(lonely_philo_function(philo));
-	// while (!philo->overview->done)
 	while (check_keep_going(philo->overview))
 	{
-		// if (philo_death_check(philo))
-		// 	return (philo_die(philo->overview, philo));
 		if (philo->philo_nbr % 2 == 1)
 		{
 			usleep(200);
@@ -94,14 +99,10 @@ void	*philo_function(void *arg)
 		}
 		else
 			usleep(20);
-		// if (!check_keep_going(philo->overview))
-		// 	return (print_with_lock(philo->overview, philo, "EXITING\n"), NULL);
 		if (!philo_eat(philo->overview, philo))
-			break ;
-		// if (!check_keep_going(philo->overview))
-		// 	return (print_with_lock(philo->overview, philo, "EXITING\n"), NULL);
+			return (NULL);
 		if (!philo->hungry)
-			break ;
+			return (NULL);
 		// if (!check_keep_going(philo->overview))
 		// 	return (print_with_lock(philo->overview, philo, "EXITING\n"), NULL);
 		philo_sleep(philo->overview, philo);
@@ -112,95 +113,10 @@ void	*philo_function(void *arg)
 	return (NULL);
 }
 
-// /** Function ran by the watcher thread. */
-// void	*watcher_function(void *arg)
-// {
-// 	t_overview		*overview;
-// 	t_philosopher	*philos;
-
-// 	// overview = (t_overview *)arg;
-// 	philos = (t_philosopher *)arg;
-// 	overview = (philos[0]).overview;
-// 	// int	i;
-// 	while (1)
-// 	{
-// 		// i = 0;
-// 		// while (i <= overview->philo_count)
-// 		// {
-// 		// 	if (philo_death_check(&philos[i]) == true)
-// 		// 		philo_die(overview, &philos[i]);
-// 		// 	i++;
-// 		// }
-
-// 		pthread_mutex_lock(&overview->done_mutex);
-// 		if (overview->done == true)
-// 		{
-// 			// pthread_mutex_lock(&overview->write_mutex);
-// 			// printf("%d DEATH FOUND BY WATCHER!\n", get_time_msec() - overview->start_time_msec);
-// 			// pthread_mutex_unlock(&overview->write_mutex);
-// 			pthread_mutex_unlock(&overview->done_mutex);
-// 			return (NULL) ;
-// 		}
-// 		pthread_mutex_unlock(&overview->done_mutex);
-// 		// if (overview->done == true)
-// 		// 	break;
-// 		usleep(1000);
-// 	}
-// 	return (NULL);
-// }
-
-// /** Function ran by the watcher thread. */
-// void	*watcher_function(void *arg)
-// {
-// 	t_overview		*overview;
-// 	t_philosopher	*philos;
-// 	// int				philo_count;
-
-// 	philos = (t_philosopher *)arg;
-// 	usleep(1000);
-// 	overview = (philos[0]).overview;
-// 	// philo_count = philos->overview->philo_count;
-// 	int	i;
-// 	while (1)
-// 	{
-// 		i = 0;
-// 		while (i < overview->philo_count)
-// 		{
-// 			if (!(philos[i]).hungry)
-// 			{
-// 				print_with_lock(overview, &(philos[i]), "FOUND ATE ENOUGH IN WATCHER\n");
-// 				pthread_mutex_lock(&(overview->done_mutex));
-// 				overview->done = true;
-// 				pthread_mutex_unlock(&(overview->done_mutex));
-// 				return (NULL);
-// 			}
-// 			if (philo_death_check(&philos[i]) == true)
-// 			{
-// 				print_with_lock(overview, &(philos[i]), "FOUND DEAD IN WATCHER\n");
-// 				return (philo_die(overview, &philos[i]));
-// 			}
-// 			i++;
-// 		}
-
-// 		// printf("watcher check: %i\n", philo_count);
-
-// 		// pthread_mutex_lock(&overview->done_mutex);
-// 		// if (overview->done == true)
-// 		// {
-// 		// 	// pthread_mutex_lock(&overview->write_mutex);
-// 		// 	// printf("%d DEATH FOUND BY WATCHER!\n", get_time_msec() - overview->start_time_msec);
-// 		// 	// pthread_mutex_unlock(&overview->write_mutex);
-// 		// 	pthread_mutex_unlock(&overview->done_mutex);
-// 		// 	return (NULL) ;
-// 		// }
-// 		// pthread_mutex_unlock(&overview->done_mutex);
-// 		// if (overview->done == true)
-// 		// 	break;
-// 	}
-// 	return (NULL);
-// }
-
-/** Function ran by the main thread. */
+/** Function ran by the main non-philosopher thread.
+ * @param overview Struct with info about the program.
+ * @param philos Struct array containing all individual philosophers.
+*/
 void	*watcher_function(t_overview *overview, t_philosopher *philos)
 {
 	int	i;
@@ -212,7 +128,6 @@ void	*watcher_function(t_overview *overview, t_philosopher *philos)
 		{
 			if (!(philos[i]).hungry)
 			{
-				print_with_lock(overview, &(philos[i]), "FOUND ATE ENOUGH IN WATCHER\n");
 				pthread_mutex_lock(&(overview->done_mutex));
 				overview->done = true;
 				pthread_mutex_unlock(&(overview->done_mutex));
@@ -229,14 +144,13 @@ void	*watcher_function(t_overview *overview, t_philosopher *philos)
 	return (NULL);
 }
 
-/** Print a message on how to properly use philosophers. */
-void	arg_error(void)
+/** Print a message on how to properly use philosophers. 
+ * @param message String about either correct philosopher argument order, or 
+ * about how the arguments should be positive ints.
+*/
+void	arg_error(char *message)
 {
-	// use fdputstr to put this on stderr instead?
-
-	printf("Make sure to structure your input as follows:\n");
-	printf("./philo [number_of_philosophers] [time_to_die] [time_to_eat] \
-[time_to_sleep] [OPTIONAL: number_of_times_each_philosopher_must_eat]\n");
+	write(2, message, ft_strlen(message));
 }
 
 /** Takes the arguments provided by the user and stores them in the overview
@@ -246,26 +160,26 @@ void	arg_error(void)
 bool	handle_args(int argc, char *argv[], t_overview *overview)
 {
 	if (argc < 5 || argc > 6)
-		return (arg_error(), false);
+		return (arg_error(MSG_ARG_STRUCTURE), false);
 	overview->philo_count = philo_atoi(argv[1]);
 	if (overview->philo_count <= 0)
-		return (printf(MSG_INVALID_INPUT), false);
+		return (arg_error(MSG_INVALID_INTS), false);
 	overview->time_to_die = philo_atoi(argv[2]);
 	if (overview->time_to_die <= 0)
-		return (printf(MSG_INVALID_INPUT), false);
+		return (arg_error(MSG_INVALID_INTS), false);
 	overview->time_to_eat = philo_atoi(argv[3]);
 	if (overview->time_to_eat <= 0)
-		return (printf(MSG_INVALID_INPUT), false);
+		return (arg_error(MSG_INVALID_INTS), false);
 	overview->time_to_sleep = philo_atoi(argv[4]);
 	if (overview->time_to_sleep <= 0)
-		return (printf(MSG_INVALID_INPUT), false);
+		return (arg_error(MSG_INVALID_INTS), false);
 	overview->amount_to_eat = 0;
 	overview->max_food_arg_given = false;	
 	if (argc > 5)
 	{
 		overview->amount_to_eat = philo_atoi(argv[5]);
 		if (overview->amount_to_eat < 0)
-			return (printf(MSG_INVALID_INPUT), false);
+			return (arg_error(MSG_INVALID_INTS), false);
 		overview->max_food_arg_given = true;
 	}
 	return (true);
@@ -282,7 +196,7 @@ void	init_philo_info(t_overview *overview, t_philosopher *philos)
 		(philos[i]).philo_nbr = i + 1;
 		(philos[i]).alive = true;
 		(philos[i]).hungry = true;
-		(philos[i]).overview = overview; // possible data race ?? ? ? ? ?
+		(philos[i]).overview = overview;
 		(philos[i]).meal_count = 0;
 		(philos[i]).recent_meal = overview->start_time_msec;
 		pthread_mutex_init(&(philos[i]).recent_meal_lock, NULL);
@@ -308,46 +222,39 @@ void	create_philos(t_overview *overview, t_philosopher *philos)
 }
 
 /** Set up the mutexes. */
-void	set_up(t_overview *overview, t_philosopher *philos)
+void	set_up(t_overview *overview)
 {
 	int	i;
 
 	i = 0;
-	(void)philos;
 	pthread_mutex_init(&(overview->write_mutex), NULL); 	// err
 	pthread_mutex_init(&(overview->done_mutex), NULL); 	// err
 	pthread_mutex_lock(&overview->done_mutex);
 	overview->done = false;
 	pthread_mutex_unlock(&overview->done_mutex);
-
-	// set up watcher thread
-	// pthread_create(&(overview->watcher), NULL, watcher_function, &overview);
-	// pthread_create(&(overview->watcher), NULL, watcher_function, philos);
-	// err
-
-	// set up forks
 	while (i < overview->philo_count)
 	{
-		pthread_mutex_init(&(overview->forks[i]), NULL);
+		pthread_mutex_init(&(overview->fork_mutexes[i]), NULL);
+		overview->forks[i] = AVAILABLE;
 		i++;
 	}
 }
 
 /** Clean up the mutexes. */
-void	clean_up(t_overview *overview)
+void	clean_up(t_overview *overview, t_philosopher *philos)
 {
 	int	i;
-	
+
 	pthread_mutex_destroy(&(overview->write_mutex));
 	pthread_mutex_destroy(&(overview->done_mutex));
-	// other mutexes destroy
 	i = 0;
 	while (i < overview->philo_count)
 	{
-		pthread_mutex_destroy(&(overview->forks[i]));
+		pthread_mutex_destroy(&(overview->fork_mutexes[i]));
+		pthread_mutex_destroy(&(philos[i]).recent_meal_lock);
 		i++;
 	}
-	// pthread_join(overview->watcher, NULL); // err
+	pthread_mutex_destroy(&overview->start_mutex);
 }
 
 void	join_philos(t_philosopher *philos)
@@ -357,10 +264,26 @@ void	join_philos(t_philosopher *philos)
 	i = 0;
 	while (i < philos->overview->philo_count)
 	{
+		// printf("tryig to join: %i\n", i + 1);
+		usleep(1000);
 		pthread_join((philos[i]).philo_thread, NULL);
 		// err handling
 		i++;
 	}
+}
+
+/** Creates and locks the start_mutex, which will only be unlocked when all
+ * philosopher threads are created and the program can start.
+ */
+bool	init_barrier(t_overview *overview)
+{
+	if (pthread_mutex_init(&(overview->start_mutex), NULL) != 0)
+	{
+		// msg about mutex init failure?
+		return (false);
+	}
+	pthread_mutex_lock(&overview->start_mutex);
+	return (true);
 }
 
 int	main(int argc, char *argv[])
@@ -368,18 +291,14 @@ int	main(int argc, char *argv[])
 	t_overview		overview;
 	t_philosopher	philos[MAX_PHILO_COUNT];
 
-	// printf("going to handle args:\n");
 	if (!handle_args(argc, argv, &overview))
 		return (EXIT_FAILURE);
-	// print_overview(&overview);
-	// fail handle ???
+	init_barrier(&overview);
 	create_philos(&overview, philos);
-	set_up(&overview, philos);
-	while (check_keep_going(&overview))
-	{
-		watcher_function(&overview, philos);
-	}
-	clean_up(&overview);
+	set_up(&overview);
+	pthread_mutex_unlock(&overview.start_mutex);
+	watcher_function(&overview, philos);
 	join_philos(philos);
+	clean_up(&overview, philos);
 	return (EXIT_SUCCESS);
 }

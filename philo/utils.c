@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/31 10:39:49 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/12 17:17:37 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/14 15:14:46 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,11 +85,12 @@ void	print_with_lock(t_overview *overview, t_philosopher *philo, char *msg)
 
 	current_time = get_time_msec(); // err handlgin
 	pthread_mutex_lock(&(overview->write_mutex));
-	if (!check_keep_going(overview) && msg[0] != 'd' && msg[0] != 'E' && msg[0] != 'F')
+	if (!check_keep_going(overview) && msg[0] != 'd')
 	{
 		pthread_mutex_unlock(&(overview->write_mutex));
 		return ;
 	}
-	printf("%d %i %s", current_time - overview->start_time_msec, philo->philo_nbr, msg);
+	printf("%d %i %s", current_time - overview->start_time_msec,
+		philo->philo_nbr, msg);
 	pthread_mutex_unlock(&(overview->write_mutex));
 }

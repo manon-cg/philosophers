@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 15:40:44 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/13 13:07:03 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/14 15:28:31 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,10 @@
 # define MSG_THINK "is thinking\n"
 # define MSG_DIE "died 💀💀💀💀💀💀💀\n"
 // # define MSG_DIE "\e[0;91mMiniShell>> \e[0m"
-# define MSG_INVALID_INPUT "Make sure all inputs are valid positive ints.\n"
+# define MSG_INVALID_INTS "Make sure all inputs are valid positive ints.\n"
+# define MSG_ARG_STRUCTURE "Make sure to structure your input as \
+follows:\n./philo [number_of_philosophers] [time_to_die] [time_to_eat] \
+[time_to_sleep] [OPTIONAL: number_of_times_each_philosopher_must_eat]\n"
 
 // large struct for all relevant infooo
 typedef struct s_overview
@@ -36,10 +39,18 @@ typedef struct s_overview
 	bool			done;
 	pthread_mutex_t	write_mutex;
 	pthread_mutex_t	done_mutex;
-	pthread_mutex_t	forks[MAX_PHILO_COUNT];
+	pthread_mutex_t	fork_mutexes[MAX_PHILO_COUNT];
+	int				forks[MAX_PHILO_COUNT];
+	pthread_mutex_t	start_mutex;
 	// pthread_t		watcher;
 	// t_philosopher	*philosophers;
 }	t_overview;
+
+enum e_availability
+{
+	AVAILABLE,
+	TAKEN	
+};
 
 // every philo has one
 typedef struct s_philosopher
