@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 15:39:04 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/14 15:31:54 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/14 16:12:55 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,12 +41,8 @@ bool	philo_death_check(t_philosopher *philo)
 	unsigned int	current_time;
 	t_overview		*overview;
 
-	// printf("running a death check!\n");
-	current_time = get_time_msec();
+	current_time = get_time_msec(); // err?
 	overview = philo->overview;
-	// erorr handling
-// 	printf("%i: current: %d // recent meal: %d diff: %d\n", 
-// philo->philo_nbr, current_time, philo->recent_meal, current_time - philo->recent_meal);
 	pthread_mutex_lock(&(philo->recent_meal_lock));
 	if (current_time - philo->recent_meal >= (unsigned int)philo->overview->time_to_die)
 	{
@@ -65,7 +61,9 @@ bool	philo_full_check(t_philosopher *philo)
 {
 	if (philo->meal_count == philo->overview->amount_to_eat)
 	{
+		// lock ? 
 		philo->hungry = false;
+		// unlock ?
 		return (false);
 	}
 	return (true);
@@ -74,9 +72,12 @@ bool	philo_full_check(t_philosopher *philo)
 /** Functions for when a philosopher is all alone. */
 void	*lonely_philo_function(t_philosopher *philo)
 {
-	// actually grab ? for pretend?
+	pthread_mutex_lock(&philo->overview->fork_mutexes[0]);
+	philo->overview->forks[0] = TAKEN;
 	print_with_lock(philo->overview, philo, MSG_FORK);
 	usleep(philo->overview->time_to_die);
+	philo->overview->forks[0] = AVAILABLE;
+	pthread_mutex_unlock(&philo->overview->fork_mutexes[0]);
 	return (NULL);
 }
 
@@ -88,26 +89,27 @@ void	*philo_function(void *arg)
 	philo = (t_philosopher *)arg;
 	pthread_mutex_lock(&philo->overview->start_mutex);
 	pthread_mutex_unlock(&philo->overview->start_mutex);
+	// philo->recent_meal = philo->overview->start_time_msec;
 	if (philo->overview->philo_count == 1)
 		return(lonely_philo_function(philo));
 	while (check_keep_going(philo->overview))
 	{
 		if (philo->philo_nbr % 2 == 1)
 		{
-			usleep(200);
+			usleep(10);
 			// usleep((philo->overview->time_to_die - get_time_msec() - philo->recent_meal) - philo->overview->time_to_eat / 2);
 		}
-		else
-			usleep(20);
+		if (!check_keep_going(philo->overview) || philo_death_check(philo))
+			return (NULL);
 		if (!philo_eat(philo->overview, philo))
 			return (NULL);
 		if (!philo->hungry)
 			return (NULL);
-		// if (!check_keep_going(philo->overview))
-		// 	return (print_with_lock(philo->overview, philo, "EXITING\n"), NULL);
+		if (!check_keep_going(philo->overview) || philo_death_check(philo))
+			return (NULL);
 		philo_sleep(philo->overview, philo);
-		// if (!check_keep_going(philo->overview))
-		// 	return (print_with_lock(philo->overview, philo, "EXITING\n"), NULL);
+		if (!check_keep_going(philo->overview) || philo_death_check(philo))
+			return (NULL);
 		philo_think(philo->overview, philo);
 	}
 	return (NULL);
@@ -126,31 +128,22 @@ void	*watcher_function(t_overview *overview, t_philosopher *philos)
 		i = 0;
 		while (i < overview->philo_count)
 		{
-			if (!(philos[i]).hungry)
+			if (philo_death_check(&philos[i]) == true)
+			{
+				print_with_lock(overview, &(philos[i]), "FOUND DEAD IN WATCHER\n");
+				return (philo_die(overview, &philos[i]));
+			}
+			if (!(philos[i]).hungry) // mutex somehow
 			{
 				pthread_mutex_lock(&(overview->done_mutex));
 				overview->done = true;
 				pthread_mutex_unlock(&(overview->done_mutex));
 				return (NULL);
 			}
-			if (philo_death_check(&philos[i]) == true)
-			{
-				print_with_lock(overview, &(philos[i]), "FOUND DEAD IN WATCHER\n");
-				return (philo_die(overview, &philos[i]));
-			}
 			i++;
 		}
 	}
 	return (NULL);
-}
-
-/** Print a message on how to properly use philosophers. 
- * @param message String about either correct philosopher argument order, or 
- * about how the arguments should be positive ints.
-*/
-void	arg_error(char *message)
-{
-	write(2, message, ft_strlen(message));
 }
 
 /** Takes the arguments provided by the user and stores them in the overview
@@ -160,26 +153,26 @@ void	arg_error(char *message)
 bool	handle_args(int argc, char *argv[], t_overview *overview)
 {
 	if (argc < 5 || argc > 6)
-		return (arg_error(MSG_ARG_STRUCTURE), false);
+		return (print_arg_error(MSG_ARG_STRUCTURE), false);
 	overview->philo_count = philo_atoi(argv[1]);
 	if (overview->philo_count <= 0)
-		return (arg_error(MSG_INVALID_INTS), false);
+		return (print_arg_error(MSG_INVALID_INTS), false);
 	overview->time_to_die = philo_atoi(argv[2]);
 	if (overview->time_to_die <= 0)
-		return (arg_error(MSG_INVALID_INTS), false);
+		return (print_arg_error(MSG_INVALID_INTS), false);
 	overview->time_to_eat = philo_atoi(argv[3]);
 	if (overview->time_to_eat <= 0)
-		return (arg_error(MSG_INVALID_INTS), false);
+		return (print_arg_error(MSG_INVALID_INTS), false);
 	overview->time_to_sleep = philo_atoi(argv[4]);
 	if (overview->time_to_sleep <= 0)
-		return (arg_error(MSG_INVALID_INTS), false);
+		return (print_arg_error(MSG_INVALID_INTS), false);
 	overview->amount_to_eat = 0;
 	overview->max_food_arg_given = false;	
 	if (argc > 5)
 	{
 		overview->amount_to_eat = philo_atoi(argv[5]);
 		if (overview->amount_to_eat < 0)
-			return (arg_error(MSG_INVALID_INTS), false);
+			return (print_arg_error(MSG_INVALID_INTS), false);
 		overview->max_food_arg_given = true;
 	}
 	return (true);
@@ -198,7 +191,7 @@ void	init_philo_info(t_overview *overview, t_philosopher *philos)
 		(philos[i]).hungry = true;
 		(philos[i]).overview = overview;
 		(philos[i]).meal_count = 0;
-		(philos[i]).recent_meal = overview->start_time_msec;
+		(philos[i]).recent_meal = overview->start_time_msec; // cant move ig
 		pthread_mutex_init(&(philos[i]).recent_meal_lock, NULL);
 		// err handling
 		i++;
@@ -211,7 +204,7 @@ void	create_philos(t_overview *overview, t_philosopher *philos)
 	int	i;
 
 	i = 0;
-	overview->start_time_msec = get_time_msec();
+	overview->start_time_msec = get_time_msec(); // cant move this ig
 	init_philo_info(overview, philos);
 	while (i < overview->philo_count)
 	{
@@ -221,7 +214,7 @@ void	create_philos(t_overview *overview, t_philosopher *philos)
 	}
 }
 
-/** Set up the mutexes. */
+/** Set up the shared mutexes and start time. */
 void	set_up(t_overview *overview)
 {
 	int	i;
@@ -238,6 +231,7 @@ void	set_up(t_overview *overview)
 		overview->forks[i] = AVAILABLE;
 		i++;
 	}
+	// overview->start_time_msec = get_time_msec();
 }
 
 /** Clean up the mutexes. */
@@ -296,6 +290,7 @@ int	main(int argc, char *argv[])
 	init_barrier(&overview);
 	create_philos(&overview, philos);
 	set_up(&overview);
+	// overview.start_time_msec = get_time_msec();
 	pthread_mutex_unlock(&overview.start_mutex);
 	watcher_function(&overview, philos);
 	join_philos(philos);
