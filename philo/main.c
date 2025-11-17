@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 15:39:04 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/17 16:08:55 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/17 16:23:01 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,11 +96,10 @@ int	main(int argc, char *argv[])
 	if (!set_up(&overview))
 		return (pthread_mutex_destroy(&overview.start_mutex), EXIT_FAILURE);
 	if (!create_philos(&overview, philos))
-		return (false); // clean start; everything from set-up
-	// overview.start_time_msec = get_time_msec();
+		return (clean_up(&overview, philos, false), EXIT_FAILURE);
 	pthread_mutex_unlock(&overview.start_mutex);
 	watcher_function(&overview, philos);
 	join_philos(philos);
-	clean_up(&overview, philos);
+	clean_up(&overview, philos, true);
 	return (EXIT_SUCCESS);
 }

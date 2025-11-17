@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 15:40:44 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/17 16:11:27 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/17 16:21:42 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,6 @@
 # define MSG_SLEEP "is sleeping\n"
 # define MSG_THINK "is thinking\n"
 # define MSG_DIE "died 💀💀💀💀💀💀💀\n"
-// # define MSG_DIE "\e[0;91mMiniShell>> \e[0m"
 # define MSG_INVALID_INTS "Make sure all inputs are valid positive ints.\n"
 # define MSG_ARG_STRUCTURE "Make sure to structure your input as \
 follows:\n./philo [number_of_philosophers] [time_to_die] [time_to_eat] \
@@ -106,14 +105,14 @@ bool			all_full_check(t_philosopher *philos, t_overview *overview);
 bool			clean_philo_mutex_fail(t_philosopher *philos, int i, int error);
 bool			clean_fork_init_fail(t_overview *overview, int i);
 void			join_philos(t_philosopher *philos);
-void			clean_up(t_overview *overview, t_philosopher *philos);
+void			clean_up(t_overview *overview, t_philosopher *philos,
+					bool philos_init);
 
 // main.c
 void			*philo_function(void *arg);
 
 // dont handi n
 void 	print_overview(t_overview *overview);
-
 
 
 #endif

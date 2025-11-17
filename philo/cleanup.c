@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/17 12:41:05 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/17 12:45:09 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/17 16:22:46 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,9 +64,10 @@ bool	clean_philo_mutex_fail(t_philosopher *philos, int i, int error)
 	return (false);
 }
 
-
-/** Clean all the mutexes. */
-void	clean_up(t_overview *overview, t_philosopher *philos)
+/** Clean all the mutexes. If philos have not been initialised, don't destroy
+ * the recent_meal_lock and hunger_lock.
+*/
+void	clean_up(t_overview *overview, t_philosopher *philos, bool philos_init)
 {
 	int	i;
 
@@ -76,7 +77,11 @@ void	clean_up(t_overview *overview, t_philosopher *philos)
 	while (i < overview->philo_count)
 	{
 		pthread_mutex_destroy(&(overview->fork_mutexes[i]));
-		pthread_mutex_destroy(&(philos[i]).recent_meal_lock);
+		if (philos_init)
+		{
+			pthread_mutex_destroy(&(philos[i]).recent_meal_lock);
+			pthread_mutex_destroy(&(philos[i]).hunger_lock);
+		}
 		i++;
 	}
 	pthread_mutex_destroy(&overview->start_mutex);
