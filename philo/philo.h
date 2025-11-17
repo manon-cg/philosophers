@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 15:40:44 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/14 15:50:21 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/17 16:11:27 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,15 +26,14 @@
 follows:\n./philo [number_of_philosophers] [time_to_die] [time_to_eat] \
 [time_to_sleep] [OPTIONAL: number_of_times_each_philosopher_must_eat]\n"
 
-// large struct for all relevant infooo
 typedef struct s_overview
 {
 	int				philo_count;
-	int	time_to_die;
-	int	time_to_eat;
-	int	time_to_sleep;
+	int				time_to_die;
+	int				time_to_eat;
+	int				time_to_sleep;
 	int				amount_to_eat;
-	bool			max_food_arg_given; // set to false if not proivded by user
+	bool			max_food_arg_given;
 	int				start_time_msec;
 	bool			done;
 	pthread_mutex_t	write_mutex;
@@ -42,17 +41,8 @@ typedef struct s_overview
 	pthread_mutex_t	fork_mutexes[MAX_PHILO_COUNT];
 	int				forks[MAX_PHILO_COUNT];
 	pthread_mutex_t	start_mutex;
-	// pthread_t		watcher;
-	// t_philosopher	*philosophers;
 }	t_overview;
 
-enum e_availability
-{
-	AVAILABLE,
-	TAKEN	
-};
-
-// every philo has one
 typedef struct s_philosopher
 {
 	t_overview		*overview;
@@ -61,31 +51,69 @@ typedef struct s_philosopher
 	bool			alive; // set to true at start
 	pthread_t		philo_thread;
 	pthread_mutex_t	recent_meal_lock;
+	pthread_mutex_t	hunger_lock;
 	int				meal_count;
 	bool			hungry;
 }	t_philosopher;
 
+enum	e_availability
+{
+	AVAILABLE,
+	TAKEN	
+};
+
+enum	e_error
+{
+	FAIL_INIT_FORK_MUTEX,
+	FAIL_INIT_HUNGER_MUTEX,
+	FAIL_INIT_RECENT_MEAL_MUTEX,
+	FAIL_THREAD
+};
+
+// init.c
+bool			handle_args(int argc, char *argv[], t_overview *overview);
+bool			init_philo_info(t_overview *overview, t_philosopher *philos);
+bool			create_philos(t_overview *overview, t_philosopher *philos);
+bool			set_up(t_overview *overview);
+bool			init_barrier(t_overview *overview);
+
 // actions
-void	philo_sleep(t_overview *overview, t_philosopher *philo);
-bool	philo_eat(t_overview *overview, t_philosopher *philo);
-bool	philo_grab(t_overview *overview, t_philosopher *philo);
-void	philo_think(t_overview *overview, t_philosopher *philo);
-void	*philo_die(t_overview *overview, t_philosopher *philo);
+void			philo_sleep(t_overview *overview, t_philosopher *philo);
+bool			philo_eat(t_overview *overview, t_philosopher *philo);
+bool			philo_grab(t_overview *overview, t_philosopher *philo);
+void			philo_think(t_overview *overview, t_philosopher *philo);
+void			*philo_die(t_overview *overview, t_philosopher *philo);
+
+// fork_utils.c
+void			drop_single_fork(t_overview *overview, int fork_nbr);
+void			take_fork(t_overview *overview, int fork_nbr);
+void			drop_both_forks(t_overview *overview, t_philosopher *philo);
 
 // utils
 size_t			ft_strlen(const char *s);
 int				philo_atoi(const char *nptr);
 unsigned int	get_time_msec(void);
 void			print_with_lock(t_overview *overview, t_philosopher *philo, char *msg);
-void			print_arg_error(char *message);
+void			print_error(char *message);
 
-// other
-bool	philo_full_check(t_philosopher *philo);
-bool	philo_death_check(t_philosopher *philo);
-bool	check_keep_going(t_overview *overview);
+// continue_checks.c
+bool			philo_full_check(t_philosopher *philo);
+bool			philo_death_check(t_philosopher *philo);
+bool			check_keep_going(t_overview *overview);
+bool			all_full_check(t_philosopher *philos, t_overview *overview);
+
+// cleanup.c
+bool			clean_philo_mutex_fail(t_philosopher *philos, int i, int error);
+bool			clean_fork_init_fail(t_overview *overview, int i);
+void			join_philos(t_philosopher *philos);
+void			clean_up(t_overview *overview, t_philosopher *philos);
+
+// main.c
+void			*philo_function(void *arg);
 
 // dont handi n
-void print_overview(t_overview *overview);
+void 	print_overview(t_overview *overview);
+
 
 
 #endif

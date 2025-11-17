@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/31 10:39:49 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/14 15:53:44 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/17 12:11:08 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,7 +100,8 @@ void	print_with_lock(t_overview *overview, t_philosopher *philo, char *msg)
  * @param message String about either correct philosopher argument order, or 
  * about how the arguments should be positive ints.
 */
-void	print_arg_error(char *message)
+void	print_error(char *message)
 {
 	write(2, message, ft_strlen(message));
 }
+

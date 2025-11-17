@@ -147,6 +147,31 @@ bool philo_grab(t_overview *overview, t_philosopher *philo)
 }
 
 
+/** Function to grab a single fork, different depending on whether it's the
+ * first or second fork (passed in param), and whether it's an odd or even
+ * numbered philosopher.
+ */
+void	grab_single_fork(t_overview *overview, t_philosopher *philo,
+	int fork_nbr)
+{
+	if (fork_nbr == 1)
+	{
+		if (philo->philo_nbr % 2 == 0)
+			take_fork(overview, philo->philo_nbr % overview->philo_count);
+		else
+			take_fork(overview, philo->philo_nbr - 1);
+	}
+	else
+	{
+		if (philo->philo_nbr % 2 == 0)
+			take_fork(overview, philo->philo_nbr - 1);
+		else
+			take_fork(overview, philo->philo_nbr % overview->philo_count);
+	}
+	print_with_lock(overview, philo, MSG_FORK);
+}
+
+
 // ITOA CHECK
 #include <stdlib.h> // for malloc()
 
