@@ -6,15 +6,14 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/17 12:46:15 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/17 15:22:07 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/17 16:58:52 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
 /** Takes the arguments provided by the user and stores them in the overview
- * struct. Checks all are valid positive integers, except for amount_to_eat
- * which is also allowed to be 0.
+ * struct. Checks all are valid positive integers.
  */
 bool	handle_args(int argc, char *argv[], t_overview *overview)
 {
@@ -37,7 +36,7 @@ bool	handle_args(int argc, char *argv[], t_overview *overview)
 	if (argc > 5)
 	{
 		overview->amount_to_eat = philo_atoi(argv[5]);
-		if (overview->amount_to_eat < 0)
+		if (overview->amount_to_eat <= 0)
 			return (print_error(MSG_INVALID_INTS), false);
 		overview->max_food_arg_given = true;
 	}
@@ -53,11 +52,10 @@ bool	init_philo_info(t_overview *overview, t_philosopher *philos)
 	while (i < overview->philo_count)
 	{
 		(philos[i]).philo_nbr = i + 1;
-		(philos[i]).alive = true;
 		(philos[i]).hungry = true;
 		(philos[i]).overview = overview;
 		(philos[i]).meal_count = 0;
-		(philos[i]).recent_meal = overview->start_time_msec; // cant move? :(
+		(philos[i]).recent_meal = overview->start_time_msec;
 		if (pthread_mutex_init(&(philos[i]).recent_meal_lock, NULL) != 0)
 			return (clean_philo_mutex_fail(philos, i,
 					FAIL_INIT_RECENT_MEAL_MUTEX));
@@ -75,7 +73,7 @@ bool	create_philos(t_overview *overview, t_philosopher *philos)
 	int	j;
 
 	i = 0;
-	overview->start_time_msec = get_time_msec(); // cant move this ig
+	overview->start_time_msec = get_time_msec();
 	if (!init_philo_info(overview, philos))
 		return (false);
 	while (i < overview->philo_count)
@@ -98,7 +96,7 @@ bool	create_philos(t_overview *overview, t_philosopher *philos)
 	return (true);
 }
 
-/** Set up the shared mutexes and start time. */
+/** Set up the shared mutexes. */
 bool	set_up(t_overview *overview)
 {
 	int	i;

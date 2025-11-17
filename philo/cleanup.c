@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/17 12:41:05 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/17 16:22:46 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/17 16:45:59 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,8 +21,8 @@ void	join_philos(t_philosopher *philos)
 	i = 0;
 	while (i < philos->overview->philo_count)
 	{
-		pthread_join((philos[i]).philo_thread, NULL);
-		// err handling
+		if (pthread_join((philos[i]).philo_thread, NULL) != 0)
+			print_error("Joining philosophers failed\n");
 		i++;
 	}
 }
@@ -84,5 +84,7 @@ void	clean_up(t_overview *overview, t_philosopher *philos, bool philos_init)
 		}
 		i++;
 	}
+	if (!philos_init)
+		pthread_mutex_unlock(&overview->start_mutex);
 	pthread_mutex_destroy(&overview->start_mutex);
 }

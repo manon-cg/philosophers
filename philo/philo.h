@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 15:40:44 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/17 16:21:42 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/17 16:59:19 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
 # define MSG_EAT "is eating\n"
 # define MSG_SLEEP "is sleeping\n"
 # define MSG_THINK "is thinking\n"
-# define MSG_DIE "died 💀💀💀💀💀💀💀\n"
+# define MSG_DIE "died\n"
 # define MSG_INVALID_INTS "Make sure all inputs are valid positive ints.\n"
 # define MSG_ARG_STRUCTURE "Make sure to structure your input as \
 follows:\n./philo [number_of_philosophers] [time_to_die] [time_to_eat] \
@@ -47,7 +47,6 @@ typedef struct s_philosopher
 	t_overview		*overview;
 	int				philo_nbr;
 	unsigned int	recent_meal;
-	bool			alive; // set to true at start
 	pthread_t		philo_thread;
 	pthread_mutex_t	recent_meal_lock;
 	pthread_mutex_t	hunger_lock;
@@ -110,9 +109,5 @@ void			clean_up(t_overview *overview, t_philosopher *philos,
 
 // main.c
 void			*philo_function(void *arg);
-
-// dont handi n
-void 	print_overview(t_overview *overview);
-
 
 #endif

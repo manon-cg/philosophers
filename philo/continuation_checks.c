@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/17 16:07:12 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/17 16:08:50 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/17 16:34:38 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,8 +36,8 @@ bool	philo_death_check(t_philosopher *philo)
 	unsigned int	current_time;
 	t_overview		*overview;
 
-	current_time = get_time_msec(); // err?
 	overview = philo->overview;
+	current_time = get_time_msec();
 	pthread_mutex_lock(&(philo->recent_meal_lock));
 	if (current_time - philo->recent_meal >= \
 (unsigned int)philo->overview->time_to_die)

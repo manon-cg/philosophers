@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 15:39:04 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/17 16:23:01 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/17 16:56:49 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 #include <stdlib.h> // for malloc/free
 #include <stddef.h> // for size_t
 #include <pthread.h>  // for threading
-# include <unistd.h> // for usleep()
+#include <unistd.h> // for usleep()
 
 /** Functions for when a philosopher is all alone. */
 void	*lonely_philo_function(t_philosopher *philo)
@@ -34,13 +34,13 @@ void	*lonely_philo_function(t_philosopher *philo)
 */
 void	*philo_function(void *arg)
 {
-	t_philosopher *philo;
+	t_philosopher	*philo;
 
 	philo = (t_philosopher *)arg;
 	pthread_mutex_lock(&philo->overview->start_mutex);
 	pthread_mutex_unlock(&philo->overview->start_mutex);
 	if (philo->overview->philo_count == 1)
-		return(lonely_philo_function(philo));
+		return (lonely_philo_function(philo));
 	while (check_keep_going(philo->overview))
 	{
 		if (philo->philo_nbr % 2 == 1)
@@ -94,7 +94,8 @@ int	main(int argc, char *argv[])
 	if (!init_barrier(&overview))
 		return (EXIT_FAILURE);
 	if (!set_up(&overview))
-		return (pthread_mutex_destroy(&overview.start_mutex), EXIT_FAILURE);
+		return (pthread_mutex_unlock(&overview.start_mutex),
+			pthread_mutex_destroy(&overview.start_mutex), EXIT_FAILURE);
 	if (!create_philos(&overview, philos))
 		return (clean_up(&overview, philos, false), EXIT_FAILURE);
 	pthread_mutex_unlock(&overview.start_mutex);

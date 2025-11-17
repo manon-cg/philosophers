@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/31 10:39:49 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/17 12:11:08 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/17 16:58:16 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,19 +15,6 @@
 #include <sys/time.h> // for gettimeofday
 #include <pthread.h>
 #include <unistd.h> // for write()
-
-// void	*ft_calloc(size_t nmemb, size_t size)
-// {
-// 	char	*array;
-
-// 	if (nmemb > SIZE_MAX / size)
-// 		return (NULL);
-// 	array = malloc(size * nmemb);
-// 	if (array == NULL)
-// 		return (NULL);
-// 	ft_bzero_gnl(array, nmemb * size);
-// 	return (array);
-// }
 
 /* returns length of string s */
 size_t	ft_strlen(const char *s)
@@ -70,11 +57,9 @@ unsigned int	get_time_msec(void)
 {
 	struct timeval	time_struct;
 
-	if (gettimeofday(&time_struct, NULL) != -1)
-		return (time_struct.tv_usec / 1000 + time_struct.tv_sec * 1000);
-	else
-		return (printf("get time of day fail\n"), 0); // 0 is not safe ? hm.
-	
+	if (gettimeofday(&time_struct, NULL) == -1)
+		print_error("Get time of day failed\n");
+	return (time_struct.tv_usec / 1000 + time_struct.tv_sec * 1000);
 }
 
 /** Locks the write mutex and then prints the message in the format
@@ -84,7 +69,7 @@ void	print_with_lock(t_overview *overview, t_philosopher *philo, char *msg)
 {
 	unsigned int	current_time;
 
-	current_time = get_time_msec(); // err handlgin
+	current_time = get_time_msec();
 	pthread_mutex_lock(&(overview->write_mutex));
 	if (!check_keep_going(overview) && msg[0] != 'd')
 	{
@@ -96,12 +81,10 @@ void	print_with_lock(t_overview *overview, t_philosopher *philo, char *msg)
 	pthread_mutex_unlock(&(overview->write_mutex));
 }
 
-/** Print a message on how to properly use philosophers. 
- * @param message String about either correct philosopher argument order, or 
- * about how the arguments should be positive ints.
+/** Print a message to stderr when an error occurs.
+ * @param message String containing the relevant error.
 */
 void	print_error(char *message)
 {
 	write(2, message, ft_strlen(message));
 }
-

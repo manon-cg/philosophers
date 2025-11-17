@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/31 11:00:22 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/17 15:56:09 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/17 16:57:47 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ bool	philo_eat(t_overview *overview, t_philosopher *philo)
 		return (drop_both_forks(overview, philo), false);
 	print_with_lock(overview, philo, MSG_EAT);
 	pthread_mutex_lock(&philo->recent_meal_lock);
-	philo->recent_meal = get_time_msec(); // error handing
+	philo->recent_meal = get_time_msec();
 	philo->meal_count += 1;
 	pthread_mutex_unlock(&philo->recent_meal_lock);
 	if (!check_keep_going(overview) || philo_death_check(philo))
@@ -48,7 +48,7 @@ bool	philo_eat(t_overview *overview, t_philosopher *philo)
 /** Philosopher grabs two forks by locking the mutexes and changing the fork
  * values to TAKEN.
  */
-bool philo_grab(t_overview *overview, t_philosopher *philo)
+bool	philo_grab(t_overview *overview, t_philosopher *philo)
 {
 	if (!check_keep_going(overview) || philo_death_check(philo))
 		return (false);
@@ -60,7 +60,8 @@ bool philo_grab(t_overview *overview, t_philosopher *philo)
 	if (!check_keep_going(overview) || philo_death_check(philo))
 	{
 		if (philo->philo_nbr % 2 == 0)
-			drop_single_fork(overview, philo->philo_nbr % overview->philo_count);
+			drop_single_fork(overview, philo->philo_nbr % \
+overview->philo_count);
 		else
 			drop_single_fork(overview, philo->philo_nbr - 1);
 		return (false);
