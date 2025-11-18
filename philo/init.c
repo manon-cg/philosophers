@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/17 12:46:15 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/17 16:58:52 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/17 17:00:31 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ bool	handle_args(int argc, char *argv[], t_overview *overview)
 }
 
 /** Each philosopher struct is initialized with their needed values. */
-bool	init_philo_info(t_overview *overview, t_philosopher *philos)
+static bool	init_philo_info(t_overview *overview, t_philosopher *philos)
 {
 	int	i;
 
@@ -97,7 +97,7 @@ bool	create_philos(t_overview *overview, t_philosopher *philos)
 }
 
 /** Set up the shared mutexes. */
-bool	set_up(t_overview *overview)
+bool	set_up_mutexes(t_overview *overview)
 {
 	int	i;
 

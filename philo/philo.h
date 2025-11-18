@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 15:40:44 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/17 16:59:19 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/18 10:05:22 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,12 +70,11 @@ enum	e_error
 
 // init.c
 bool			handle_args(int argc, char *argv[], t_overview *overview);
-bool			init_philo_info(t_overview *overview, t_philosopher *philos);
 bool			create_philos(t_overview *overview, t_philosopher *philos);
-bool			set_up(t_overview *overview);
+bool			set_up_mutexes(t_overview *overview);
 bool			init_barrier(t_overview *overview);
 
-// actions
+// philo_actions.c
 void			philo_sleep(t_overview *overview, t_philosopher *philo);
 bool			philo_eat(t_overview *overview, t_philosopher *philo);
 bool			philo_grab(t_overview *overview, t_philosopher *philo);
@@ -83,28 +82,28 @@ void			philo_think(t_overview *overview, t_philosopher *philo);
 void			*philo_die(t_overview *overview, t_philosopher *philo);
 
 // fork_utils.c
-void			drop_single_fork(t_overview *overview, int fork_nbr);
 void			take_fork(t_overview *overview, int fork_nbr);
+void			drop_single_fork(t_overview *overview, int fork_nbr);
 void			drop_both_forks(t_overview *overview, t_philosopher *philo);
 
 // utils
-size_t			ft_strlen(const char *s);
+// size_t			ft_strlen(const char *s);
 int				philo_atoi(const char *nptr);
 unsigned int	get_time_msec(void);
 void			print_with_lock(t_overview *overview, t_philosopher *philo, char *msg);
 void			print_error(char *message);
 
 // continue_checks.c
-bool			philo_full_check(t_philosopher *philo);
-bool			philo_death_check(t_philosopher *philo);
 bool			check_keep_going(t_overview *overview);
+bool			philo_death_check(t_philosopher *philo);
+bool			philo_full_check(t_philosopher *philo);
 bool			all_full_check(t_philosopher *philos, t_overview *overview);
 
 // cleanup.c
 bool			clean_philo_mutex_fail(t_philosopher *philos, int i, int error);
 bool			clean_fork_init_fail(t_overview *overview, int i);
 void			join_philos(t_philosopher *philos);
-void			clean_up(t_overview *overview, t_philosopher *philos,
+void			clean_up_mutexes(t_overview *overview, t_philosopher *philos,
 					bool philos_init);
 
 // main.c

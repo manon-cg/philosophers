@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/31 10:39:49 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/17 16:58:16 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/17 17:01:52 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 #include <unistd.h> // for write()
 
 /* returns length of string s */
-size_t	ft_strlen(const char *s)
+static size_t	ft_strlen(const char *s)
 {
 	int	i;
 
