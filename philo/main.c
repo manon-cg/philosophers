@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 15:39:04 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/18 10:05:22 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/18 10:10:10 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,8 @@ void	*lonely_philo_function(t_philosopher *philo)
 
 /** Philo function ran by each philosopher. First it has to wait for the 
  * start mutex to be unlocked, then it can run its eat / sleep / think loop.
+ * @param arg Void pointer passed to function. Should be a pointer to a
+ * philosopher struct in this case.
 */
 void	*philo_function(void *arg)
 {

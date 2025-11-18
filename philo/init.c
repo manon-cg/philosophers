@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/17 12:46:15 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/17 17:00:31 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/18 10:21:41 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,14 +22,13 @@ bool	handle_args(int argc, char *argv[], t_overview *overview)
 	overview->philo_count = philo_atoi(argv[1]);
 	if (overview->philo_count <= 0)
 		return (print_error(MSG_INVALID_INTS), false);
+	if (overview->philo_count > MAX_PHILO_COUNT)
+		return (print_error(MSG_TOO_MANY_PHILOS), false);
 	overview->time_to_die = philo_atoi(argv[2]);
-	if (overview->time_to_die <= 0)
-		return (print_error(MSG_INVALID_INTS), false);
 	overview->time_to_eat = philo_atoi(argv[3]);
-	if (overview->time_to_eat <= 0)
-		return (print_error(MSG_INVALID_INTS), false);
 	overview->time_to_sleep = philo_atoi(argv[4]);
-	if (overview->time_to_sleep <= 0)
+	if (overview->time_to_die <= 0 || overview->time_to_eat <= 0 || \
+overview->time_to_sleep <= 0)
 		return (print_error(MSG_INVALID_INTS), false);
 	overview->amount_to_eat = 0;
 	overview->max_food_arg_given = false;

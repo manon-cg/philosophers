@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/31 10:39:49 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/17 17:01:52 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/18 10:23:28 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,8 +69,8 @@ void	print_with_lock(t_overview *overview, t_philosopher *philo, char *msg)
 {
 	unsigned int	current_time;
 
-	current_time = get_time_msec();
 	pthread_mutex_lock(&(overview->write_mutex));
+	current_time = get_time_msec();
 	if (!check_keep_going(overview) && msg[0] != 'd')
 	{
 		pthread_mutex_unlock(&(overview->write_mutex));

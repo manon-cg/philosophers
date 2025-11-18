@@ -6,7 +6,7 @@
 /*   By: mgroos <mgroos@student.codam.nl>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 15:40:44 by mgroos            #+#    #+#             */
-/*   Updated: 2025/11/18 10:05:22 by mgroos           ###   ########.fr       */
+/*   Updated: 2025/11/18 10:24:57 by mgroos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,8 @@
 # define MSG_ARG_STRUCTURE "Make sure to structure your input as \
 follows:\n./philo [number_of_philosophers] [time_to_die] [time_to_eat] \
 [time_to_sleep] [OPTIONAL: number_of_times_each_philosopher_must_eat]\n"
+# define MSG_TOO_MANY_PHILOS "If you want to test with more philosophers, \
+change the MAX_PHILO_COUNT in the header file.\n"
 
 typedef struct s_overview
 {
@@ -90,7 +92,8 @@ void			drop_both_forks(t_overview *overview, t_philosopher *philo);
 // size_t			ft_strlen(const char *s);
 int				philo_atoi(const char *nptr);
 unsigned int	get_time_msec(void);
-void			print_with_lock(t_overview *overview, t_philosopher *philo, char *msg);
+void			print_with_lock(t_overview *overview, t_philosopher *philo,
+					char *msg);
 void			print_error(char *message);
 
 // continue_checks.c
